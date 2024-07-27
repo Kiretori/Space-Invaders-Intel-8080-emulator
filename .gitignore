@@ -1,0 +1,19 @@
+# Ignore build directory
+/build
+
+# Ignore helper scripts
+/helpers
+
+# Ignore object files
+*.o
+
+# Ignore executable files
+*.exe
+*.out
+
+# Ignore temporary files
+*.log
+*.tmp
+*.swp
+
+/.vscode
