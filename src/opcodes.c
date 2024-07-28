@@ -154,7 +154,7 @@ void JNZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void JZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    if (state->cc.z != 0) {
+    if (state->cc.z == 1) {
         state->pc = (byte2 << 8) | (byte1);
     }
     else {
@@ -164,7 +164,7 @@ void JZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void JC(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    if (state->cc.cy != 0) {
+    if (state->cc.cy == 1) {
         state->pc = (byte2 << 8) | (byte1);
     }
     else {
@@ -175,6 +175,46 @@ void JC(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 void JNC(State8080 *state, uint8_t byte1, uint8_t byte2) {
     if (state->cc.cy == 0) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void JM(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.s == 1) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void JP(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.s == 0) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void JPE(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.p == 1) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.p == 0) {
         state->pc = (byte2 << 8) | (byte1);
     }
     else {
