@@ -163,6 +163,26 @@ void JZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
 }
 
 
+void JC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.cy != 0) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void JNC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.cy == 0) {
+        state->pc = (byte2 << 8) | (byte1);
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
 void PUSH_R(State8080 *state, REGISTERS src) {
     state->memory[state->sp-1] = state->registers[src];
     state->memory[state->sp-2] = state->registers[src + 1];
