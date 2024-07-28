@@ -261,6 +261,37 @@ void MVI_M(State8080 *state, uint8_t byte) {
 }
 
 
+void ANA_R(State8080 *state, REGISTERS reg) {
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[reg];
+    uint8_t res = val1 & val2;
+
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    state->cc.cy = 0;
+    state->cc.ac = ((val1 | val2) >> 3) & 1;
+
+    state->registers[A] = res;
+}
+
+
+void ANA_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->memory[offset];
+    uint8_t res = val1 & val2;
+
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    state->cc.cy = 0;
+    state->cc.ac = ((val1 | val2) >> 3) & 1;
+
+    state->registers[A] = res;
+}
+
+
 void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2) {
     _cpu_set_reg_pair(state, reg1, reg2, byte1, byte2);
     state->pc += 2;
