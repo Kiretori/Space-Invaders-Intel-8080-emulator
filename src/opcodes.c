@@ -48,14 +48,21 @@ static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bo
     state->cc.ac = ((val1 & 0xF) + (val2 & 0xF) + carry) > 0xF;
 }
 
-void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2)
-{
+void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2) {
     _update_flag_z(state, res);
     _update_flag_s(state, res);
     _update_flag_p(state, res);
     state->cc.cy = 0;
     state->cc.ac = ((val1 | val2) >> 3) & 1;
 }
+
+void _update_flag_or(State8080  *state, int8_t res) {
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    state->cc.cy = 0;
+    state->cc.ac = 0;
+} 
 
 //================================= Arithmetic instructions: =================================//
 
@@ -293,11 +300,7 @@ void ANA_R(State8080 *state, REGISTERS reg) {
     uint8_t val2 = state->registers[reg];
     uint8_t res = val1 & val2;
 
-    _update_flag_z(state, res);
-    _update_flag_s(state, res);
-    _update_flag_p(state, res);
-    state->cc.cy = 0;
-    state->cc.ac = ((val1 | val2) >> 3) & 1;
+    _update_flag_and(state, res, val1, val2);
 
     state->registers[A] = res;
 }
@@ -321,6 +324,23 @@ void ANI(State8080 *state, uint8_t byte) {
     _update_flag_add(state, res, val, byte);
 
     state->registers[A] = res;   
+}
+
+
+void XRA_R(State8080 *state, REGISTERS reg) {
+    uint8_t res = state->registers[A] ^ state->registers[reg];
+    _update_flag_ac_or(state, res);
+
+    state->registers[A] = res;
+}
+
+
+void XRA_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t res = state->registers[A] ^ state->memory[offset];
+    _update_flag_or(state, res);
+
+    state->registers[A] = res;
 }
 
 
