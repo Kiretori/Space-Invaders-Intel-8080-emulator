@@ -47,7 +47,7 @@ static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bo
     state->cc.ac = ((val1 & 0xF) + (val2 & 0xF) + carry) > 0xF;
 }
 
-
+//================================= Arithmetic instructions: =================================//
 
 void ADD_R(State8080 *state, REGISTERS reg) {
     uint8_t val1 = state->registers[A];
@@ -62,14 +62,6 @@ void ADD_R(State8080 *state, REGISTERS reg) {
 
     state->registers[A] = answer & 0xFF;
 
-}
-
-
-void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    uint16_t address = ((uint16_t) byte2 << 8) | (byte1);
-    state->memory[address] = state->registers[A];
-
-    state->pc += 2;
 }
 
 
@@ -128,6 +120,7 @@ void ADD_M(State8080 *state) {
 
 }
 
+//================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
     uint16_t return_adr = state->pc + 2;
@@ -223,6 +216,8 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
 }
 
 
+//=================================Stack and I/O instructions: =================================//
+
 void PUSH_R(State8080 *state, REGISTERS src) {
     state->memory[state->sp-1] = state->registers[src];
     state->memory[state->sp-2] = state->registers[src + 1];
@@ -246,6 +241,15 @@ void PUSH_PSW(State8080 *state) {
     state->sp -= 2;
 } 
 
+//================================= Data Transfer instructions: =================================//
+
+void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    uint16_t address = ((uint16_t) byte2 << 8) | (byte1);
+    state->memory[address] = state->registers[A];
+
+    state->pc += 2;
+}
+
 
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte) {
     state->registers[reg] = byte;
@@ -260,6 +264,19 @@ void MVI_M(State8080 *state, uint8_t byte) {
     state->pc += 1;
 }
 
+
+void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2) {
+    _cpu_set_reg_pair(state, reg1, reg2, byte1, byte2);
+    state->pc += 2;
+}
+
+
+void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->sp = (byte2 << 8) | byte1;
+    state->pc += 2;
+}
+
+//================================= Logical instructions: =================================//
 
 void ANA_R(State8080 *state, REGISTERS reg) {
     uint8_t val1 = state->registers[A];
@@ -292,14 +309,5 @@ void ANA_M(State8080 *state) {
 }
 
 
-void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2) {
-    _cpu_set_reg_pair(state, reg1, reg2, byte1, byte2);
-    state->pc += 2;
-}
 
-
-void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    state->sp = (byte2 << 8) | byte1;
-    state->pc += 2;
-}
 
