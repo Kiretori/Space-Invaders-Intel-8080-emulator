@@ -67,4 +67,10 @@ void XRA_M(State8080 *state);
 
 void XRI(State8080 *state, uint8_t byte);
 
+void ORA_R(State8080 *state, REGISTERS reg);
+
+void ORA_M(State8080 *state);
+
+void ORI(State8080 *state, uint8_t byte);
+
 #endif

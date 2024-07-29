@@ -356,4 +356,31 @@ void XRI(State8080 *state, uint8_t byte) {
 }
 
 
+void ORA_R(State8080 *state, REGISTERS reg) {
+    uint8_t res = (state->registers[A]) | (state->registers[reg]);
+    _update_flag_ac_or(state, res);
+
+    state->registers[A] = res;
+}
+
+
+void ORA_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t res = (state->registers[A]) | (state->memory[offset]);
+    _update_flag_or(state, res);
+
+    state->registers[A] = res;
+}
+
+
+void ORI(State8080 *state, uint8_t byte) {
+    uint8_t res = (state->registers[A]) ^ byte;
+    _update_flag_ac_or(state, res);
+
+    state->registers[A] = res;
+
+    state->pc += 1;
+}
+
+
 
