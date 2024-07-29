@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "emu8080.h"
+#include "opcodes.h"
 
 int Parity(uint8_t value) {
     int set_bits = 0;
@@ -45,6 +46,15 @@ static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bo
     int carry = add_carry ? state->cc.cy : 0;
     uint8_t value = (val1 & 0xF) + (val2 & 0xF) + carry;
     state->cc.ac = ((val1 & 0xF) + (val2 & 0xF) + carry) > 0xF;
+}
+
+void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2)
+{
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    state->cc.cy = 0;
+    state->cc.ac = ((val1 | val2) >> 3) & 1;
 }
 
 //================================= Arithmetic instructions: =================================//
@@ -218,9 +228,9 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 //=================================Stack and I/O instructions: =================================//
 
-void PUSH_R(State8080 *state, REGISTERS src) {
-    state->memory[state->sp-1] = state->registers[src];
-    state->memory[state->sp-2] = state->registers[src + 1];
+void PUSH(State8080 *state, REGISTERS src) {  // Use PUSH(state, H) for PUSH M 
+    state->memory[state->sp - 1] = state->registers[src];
+    state->memory[state->sp - 2] = state->registers[src + 1];
 
     state->sp -= 2;
 }
@@ -299,13 +309,18 @@ void ANA_M(State8080 *state) {
     uint8_t val2 = state->memory[offset];
     uint8_t res = val1 & val2;
 
-    _update_flag_z(state, res);
-    _update_flag_s(state, res);
-    _update_flag_p(state, res);
-    state->cc.cy = 0;
-    state->cc.ac = ((val1 | val2) >> 3) & 1;
-
+    _update_flag_and(state, res, val1, val2);
     state->registers[A] = res;
+}
+
+
+void ANI(State8080 *state, uint8_t byte) {
+    uint8_t val = state->registers[A];
+    uint8_t res = val & byte;
+
+    _update_flag_add(state, res, val, byte);
+
+    state->registers[A] = res;   
 }
 
 

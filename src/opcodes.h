@@ -6,9 +6,8 @@
 
 int Parity(uint8_t value);
 
+//================================= Arithmetic instructions: =================================//
 void ADD_R(State8080 *state, REGISTERS reg);
-
-void STA(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void DCR_R(State8080 *state, REGISTERS reg);
 
@@ -18,6 +17,7 @@ void ADD_I(State8080 *state, uint8_t value);
 
 void ADD_M(State8080 *state);
 
+//================================= Branch instructions: =================================//
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2);
 
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2);
@@ -38,21 +38,27 @@ void JPE(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void JPO(State8080 *state, uint8_t byte1, uint8_t byte2);
 
-void PUSH_R(State8080 *state, REGISTERS src);
+//=================================Stack and I/O instructions: =================================//
+void PUSH(State8080 *state, REGISTERS src);
 
 void PUSH_PSW(State8080 *state);
 
+//================================= Data Transfer instructions: =================================//
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte);
 
 void MVI_M(State8080 *state, uint8_t byte);
-
-void ANA_R(State8080 *state, REGISTERS reg);
-
-void ANA_M(State8080 *state);
 
 void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2);
 
 void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
+void STA(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+//================================= Logical instructions: =================================//
+void ANA_R(State8080 *state, REGISTERS reg);
+
+void ANA_M(State8080 *state);
+
+void ANI(State8080 *state, uint8_t byte);
 
 #endif
