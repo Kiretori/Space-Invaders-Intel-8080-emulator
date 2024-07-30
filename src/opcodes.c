@@ -148,6 +148,19 @@ void INR_M(State8080 *state) {
 }
 
 
+void INX_PAIR(State8080 *state, REGISTERS reg) {
+    uint16_t pair_value = (state->registers[reg] << 8) | state->registers[reg + 1];
+    pair_value++;
+    state->registers[reg] = (uint8_t) (pair_value >> 8);
+    state->registers[reg + 1] = (uint8_t) (pair_value & 0xFF);
+}
+
+
+void INX_SP(State8080 *state, REGISTERS reg) {
+    state->sp += 1;
+}
+
+
 void DCR_R(State8080 *state, REGISTERS reg) {
     uint8_t value = state->registers[reg];
     uint16_t answer = value - 1;
