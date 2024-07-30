@@ -432,3 +432,18 @@ void CPI(State8080 *state, uint8_t byte) {
 
     state->pc += 1;
 }
+
+
+void CMA(State8080 *state) {
+    state->registers[A] = ~(state->registers[A]);
+}
+
+
+void CMC(State8080 *state) {
+    state->cc.cy = ~(state->cc.cy);
+}
+
+
+void STC(State8080 *state) {
+    state->cc.cy = 1;
+}

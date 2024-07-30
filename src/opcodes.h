@@ -79,4 +79,10 @@ void CMP_M(State8080 *state);
 
 void CPI(State8080 *state, uint8_t byte);
 
+void CMA(State8080 *state);
+
+void CMC(State8080 *state);
+
+void STC(State8080 *state);
+
 #endif
