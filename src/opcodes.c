@@ -392,6 +392,85 @@ void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
 }
 
 
+void CZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.z == 1) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CNZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.z == 0) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.cy == 1) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CNC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.cy == 0) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.p == 0) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CPE(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.p == 1) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CP(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.s == 0) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
+
+void CM(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    if (state->cc.s == 1) {
+        CALL(state, byte1, byte2);  
+    }
+    else {
+        state->pc += 2;
+    }
+}
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2) {
     state->pc = (byte2 << 8) | (byte1);
 }
@@ -475,6 +554,8 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
         state->pc += 2;
     }
 }
+
+
 
 
 //!=================================Stack and I/O instructions: =================================//

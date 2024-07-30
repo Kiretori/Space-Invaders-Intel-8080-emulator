@@ -53,6 +53,22 @@ void DAA(State8080 *state);
 //================================= Branch instructions: =================================//
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2);
 
+void CZ(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CNZ(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CC(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CNC(State8080 *state, uint8_t byte1, uint8_t byte2); 
+
+void CPO(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CPE(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CP(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void CM(State8080 *state, uint8_t byte1, uint8_t byte2);
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void JNZ(State8080 *state, uint8_t byte1, uint8_t byte2);
