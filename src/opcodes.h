@@ -13,6 +13,10 @@ void ADD_I(State8080 *state, uint8_t value);
 
 void ADD_M(State8080 *state);
 
+void ADC_R(State8080 *state, REGISTERS reg);
+
+void ADC_M(State8080 *state);
+
 void DCR_R(State8080 *state, REGISTERS reg);
 
 void DCR_M(State8080 *state);

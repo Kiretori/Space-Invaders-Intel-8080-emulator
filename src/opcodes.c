@@ -125,6 +125,36 @@ void ADD_M(State8080 *state) {
 }
 
 
+void ADC_R(State8080 *state, REGISTERS reg) {
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[reg];
+    uint8_t answer = val1 + val2 + state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_add(state, val1, val2, true);
+    _update_flag_cy_add(state, val1 + val2, true);
+
+    state->registers[A] = answer;
+}
+
+
+void ADC_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->memory[offset];
+    uint8_t answer = val1 + val2 + state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_add(state, val1, val2, true);
+    _update_flag_cy_add(state, val1 + val2, true);
+
+    state->registers[A] = answer;
+}
+
 void INR_R(State8080 *state, REGISTERS reg) {
     uint16_t answer = state->registers[reg] + 1;
     uint8_t value = state->registers[reg];
