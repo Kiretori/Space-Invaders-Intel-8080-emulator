@@ -27,12 +27,21 @@ static void _update_flag_s(State8080 *state, uint16_t res) {
     state->cc.s = ((res & (1 << 7)) != 0);
 }
 
-static void _update_flag_cy(State8080 *state, uint16_t res) {
-    state->cc.cy = res > 0xFF;
-}
 
 static void _update_flag_p(State8080 *state, uint16_t res) {
     state->cc.p = Parity(res & 0xFF);
+}
+
+static void _update_flag_cy_sub(State8080 *state, uint8_t val1, uint8_t val2, bool sub_borrow) {
+    int borrow = sub_borrow ? state->cc.cy : 0;
+    uint16_t res = val1 + ~val2 + !borrow;
+    state->cc.cy = res > 0xFF;
+}
+
+static void _update_flag_cy_add(State8080 *state, uint16_t answer, bool add_carry) {
+    int carry = add_carry ? state->cc.cy : 0;
+    uint16_t res = answer + carry;
+    state->cc.cy = res > 0xFF;
 }
 
 static void _update_flag_ac_sub(State8080 *state, uint8_t val1, uint8_t val2, bool sub_borrow) {
@@ -48,7 +57,9 @@ static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bo
     state->cc.ac = ((val1 & 0xF) + (val2 & 0xF) + carry) > 0xF;
 }
 
-void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2) {
+
+
+static void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2) {
     _update_flag_z(state, res);
     _update_flag_s(state, res);
     _update_flag_p(state, res);
@@ -56,7 +67,7 @@ void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2)
     state->cc.ac = ((val1 | val2) >> 3) & 1;
 }
 
-void _update_flag_or(State8080  *state, int8_t res) {
+static void _update_flag_or(State8080  *state, int8_t res) {
     _update_flag_z(state, res);
     _update_flag_s(state, res);
     _update_flag_p(state, res);
@@ -73,7 +84,7 @@ void ADD_R(State8080 *state, REGISTERS reg) {
 
     _update_flag_z(state, answer);
     _update_flag_s(state, answer);
-    _update_flag_cy(state, answer);
+    _update_flag_cy_add(state, answer, false);
     _update_flag_p(state, answer);
     _update_flag_ac_add(state, val1, val2, false);
 
@@ -115,8 +126,8 @@ void ADD_I(State8080 *state, uint8_t value) {
 
     _update_flag_z(state, answer);
     _update_flag_s(state, answer);
-    _update_flag_cy(state, answer);
     _update_flag_p(state, answer);
+    _update_flag_cy_add(state, answer, false);
     _update_flag_ac_add(state, state->registers[A], value, false); 
     
     state->registers[A] = answer & 0xFF;
@@ -130,7 +141,7 @@ void ADD_M(State8080 *state) {
     
     _update_flag_z(state, answer);
     _update_flag_s(state, answer);
-    _update_flag_cy(state, answer);
+    _update_flag_cy_add(state, answer, false);
     _update_flag_p(state, answer);
     _update_flag_ac_add(state, state->registers[A], state->memory[offset], false);
     state->registers[A] = answer & 0xFF;
@@ -321,7 +332,7 @@ void ANI(State8080 *state, uint8_t byte) {
     uint8_t val = state->registers[A];
     uint8_t res = val & byte;
 
-    _update_flag_add(state, res, val, byte);
+    _update_flag_and(state, res, val, byte);
 
     state->registers[A] = res;  
 
@@ -331,7 +342,7 @@ void ANI(State8080 *state, uint8_t byte) {
 
 void XRA_R(State8080 *state, REGISTERS reg) {
     uint8_t res = (state->registers[A]) ^ (state->registers[reg]);
-    _update_flag_ac_or(state, res);
+    _update_flag_or(state, res);
 
     state->registers[A] = res;
 }
@@ -348,7 +359,7 @@ void XRA_M(State8080 *state) {
 
 void XRI(State8080 *state, uint8_t byte) {
     uint8_t res = (state->registers[A]) ^ byte;
-    _update_flag_ac_or(state, res);
+    _update_flag_or(state, res);
 
     state->registers[A] = res;
 
@@ -358,7 +369,8 @@ void XRI(State8080 *state, uint8_t byte) {
 
 void ORA_R(State8080 *state, REGISTERS reg) {
     uint8_t res = (state->registers[A]) | (state->registers[reg]);
-    _update_flag_ac_or(state, res);
+    
+    _update_flag_or(state, res);
 
     state->registers[A] = res;
 }
@@ -375,7 +387,7 @@ void ORA_M(State8080 *state) {
 
 void ORI(State8080 *state, uint8_t byte) {
     uint8_t res = (state->registers[A]) ^ byte;
-    _update_flag_ac_or(state, res);
+    _update_flag_or(state, res);
 
     state->registers[A] = res;
 
@@ -383,4 +395,13 @@ void ORI(State8080 *state, uint8_t byte) {
 }
 
 
-
+void CMP(State8080 *state, REGISTERS reg) {
+    uint8_t res = state->registers[A] - state->registers[reg];
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[reg];
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val1, val2, false);
+    _update_flag_ac_sub(state, val1, val2, false);
+}

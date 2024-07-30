@@ -73,4 +73,6 @@ void ORA_M(State8080 *state);
 
 void ORI(State8080 *state, uint8_t byte);
 
+void CMP(State8080 *state, REGISTERS reg);
+
 #endif
