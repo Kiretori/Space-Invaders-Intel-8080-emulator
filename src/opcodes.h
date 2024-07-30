@@ -9,14 +9,19 @@ int Parity(uint8_t value);
 //================================= Arithmetic instructions: =================================//
 void ADD_R(State8080 *state, REGISTERS reg);
 
-void DCR_R(State8080 *state, REGISTERS reg);
-
-void DCR_M(State8080 *state);
-
 void ADD_I(State8080 *state, uint8_t value);
 
 void ADD_M(State8080 *state);
 
+void DCR_R(State8080 *state, REGISTERS reg);
+
+void DCR_M(State8080 *state);
+
+void SUB_R(State8080 *state, REGISTERS reg);
+
+void SUB_M(State8080 *state);
+
+void SUI(State8080 *state, uint8_t byte);
 //================================= Branch instructions: =================================//
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2);
 

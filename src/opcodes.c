@@ -75,7 +75,7 @@ static void _update_flag_or(State8080  *state, int8_t res) {
     state->cc.ac = 0;
 } 
 
-//================================= Arithmetic instructions: =================================//
+//!================================= Arithmetic instructions: =================================//
 
 void ADD_R(State8080 *state, REGISTERS reg) {
     uint8_t val1 = state->registers[A];
@@ -88,6 +88,34 @@ void ADD_R(State8080 *state, REGISTERS reg) {
     _update_flag_p(state, answer);
     _update_flag_ac_add(state, val1, val2, false);
 
+    state->registers[A] = answer & 0xFF;
+
+}
+
+
+void ADD_I(State8080 *state, uint8_t value) {
+    uint16_t answer = (uint16_t) state->registers[A] + (uint16_t) value;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_cy_add(state, answer, false);
+    _update_flag_ac_add(state, state->registers[A], value, false); 
+    
+    state->registers[A] = answer & 0xFF;
+
+}
+
+
+void ADD_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint16_t answer = (uint16_t) state->registers[A] + state->memory[offset];
+    
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_cy_add(state, answer, false);
+    _update_flag_p(state, answer);
+    _update_flag_ac_add(state, state->registers[A], state->memory[offset], false);
     state->registers[A] = answer & 0xFF;
 
 }
@@ -121,34 +149,50 @@ void DCR_M(State8080 *state) {
 }
 
 
-void ADD_I(State8080 *state, uint8_t value) {
-    uint16_t answer = (uint16_t) state->registers[A] + (uint16_t) value;
+void SUB_R(State8080 *state, REGISTERS reg) {
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[reg];
+    uint8_t res = val1 - val2;
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val1, val2, false);
+    _update_flag_ac_sub(state, val1, val2, false);
 
-    _update_flag_z(state, answer);
-    _update_flag_s(state, answer);
-    _update_flag_p(state, answer);
-    _update_flag_cy_add(state, answer, false);
-    _update_flag_ac_add(state, state->registers[A], value, false); 
-    
-    state->registers[A] = answer & 0xFF;
-
+    state->registers[A] = res;
 }
 
 
-void ADD_M(State8080 *state) {
+void SUB_M(State8080 *state) {
     uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
-    uint16_t answer = (uint16_t) state->registers[A] + state->memory[offset];
-    
-    _update_flag_z(state, answer);
-    _update_flag_s(state, answer);
-    _update_flag_cy_add(state, answer, false);
-    _update_flag_p(state, answer);
-    _update_flag_ac_add(state, state->registers[A], state->memory[offset], false);
-    state->registers[A] = answer & 0xFF;
+    uint8_t val1 = state->memory[A];
+    uint8_t val2 = state->memory[offset];
+    uint8_t res = val1 - val2;
 
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);  
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val1, val2, false);
+    _update_flag_ac_sub(state, val1, val2, false);
+
+    state->registers[A] = res;
 }
 
-//================================= Branch instructions: =================================//
+
+void SUI(State8080 *state, uint8_t byte) {
+    uint8_t val = state->registers[A];
+    uint8_t res = val - byte;
+
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);  
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val, byte, false);
+    _update_flag_ac_sub(state, val, byte, false);
+
+    state->registers[A] = res;
+}
+
+//!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
     uint16_t return_adr = state->pc + 2;
@@ -244,7 +288,7 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
 }
 
 
-//=================================Stack and I/O instructions: =================================//
+//!=================================Stack and I/O instructions: =================================//
 
 void PUSH(State8080 *state, REGISTERS src) {  // Use PUSH(state, H) for PUSH M 
     state->memory[state->sp - 1] = state->registers[src];
@@ -269,7 +313,7 @@ void PUSH_PSW(State8080 *state) {
     state->sp -= 2;
 } 
 
-//================================= Data Transfer instructions: =================================//
+//!================================= Data Transfer instructions: =================================//
 
 void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
     uint16_t address = ((uint16_t) byte2 << 8) | (byte1);
@@ -304,7 +348,7 @@ void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2) {
     state->pc += 2;
 }
 
-//================================= Logical instructions: =================================//
+//!================================= Logical instructions: =================================//
 
 void ANA_R(State8080 *state, REGISTERS reg) {
     uint8_t val1 = state->registers[A];
