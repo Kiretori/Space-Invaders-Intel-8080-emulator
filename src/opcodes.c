@@ -121,16 +121,43 @@ void ADD_M(State8080 *state) {
 }
 
 
+void INR_R(State8080 *state, REGISTERS reg) {
+    uint16_t answer = state->registers[reg] + 1;
+    uint8_t value = state->registers[reg];
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state , answer);
+    _update_flag_ac_add(state, value, 1, false);
+
+    state->registers[reg] = answer;
+}
+
+
+void INR_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t value = state->memory[offset];
+    uint8_t answer = value + 1;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_add(state, value, 1, false);
+
+    state->memory[offset] = answer;
+
+}
+
+
 void DCR_R(State8080 *state, REGISTERS reg) {
     uint8_t value = state->registers[reg];
-    uint16_t result = state->registers[reg] - 1;
+    uint16_t answer = value - 1;
 
-    _update_flag_z(state, result);
-    _update_flag_s(state, result);
-    _update_flag_p(state, result);
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
     _update_flag_ac_sub(state, value, 1, false);
 
-    state->registers[reg] -= 1;
+    state->registers[reg] = answer;
 }
 
 
@@ -190,6 +217,34 @@ void SUI(State8080 *state, uint8_t byte) {
     _update_flag_ac_sub(state, val, byte, false);
 
     state->registers[A] = res;
+}
+
+
+void DCR_R(State8080 *state, REGISTERS reg) {
+    uint8_t value = state->registers[reg];
+    uint16_t result = state->registers[reg] - 1;
+
+    _update_flag_z(state, result);
+    _update_flag_s(state, result);
+    _update_flag_p(state, result);
+    _update_flag_ac_sub(state, value, 1, false);
+
+    state->registers[reg] -= 1;
+}
+
+
+void DCR_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t value = state->memory[offset];
+    uint8_t answer = value - 1;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);  
+    _update_flag_p(state, answer);
+    _update_flag_ac_sub(state, value, 1, false);
+
+    state->memory[offset] -= 1;
+
 }
 
 //!================================= Branch instructions: =================================//

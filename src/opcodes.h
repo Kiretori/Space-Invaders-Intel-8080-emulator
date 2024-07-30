@@ -22,6 +22,10 @@ void SUB_R(State8080 *state, REGISTERS reg);
 void SUB_M(State8080 *state);
 
 void SUI(State8080 *state, uint8_t byte);
+
+void INR_R(State8080 *state, REGISTERS reg);
+
+void INR_M(State8080 *state);
 //================================= Branch instructions: =================================//
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2);
 
