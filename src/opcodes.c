@@ -261,6 +261,29 @@ void DAD(State8080 *state, REGISTERS reg) {
     state->registers[L] = (uint8_t) (answer & 0xFF);
 }
 
+
+void DAA(State8080 *state) {
+    uint8_t acc_val = state->registers[A];
+    uint8_t val = 0;
+    if (((state->registers[A] & 0x0F) > 0x09) || state->cc.ac) {
+        val += 0x06;
+        state->registers[A] += 0x06;
+    }
+
+    if (((state->registers[A] >> 4) > 0x09) || state->cc.cy) {
+        val += 0x60;
+        state->registers[A] += 0x60;
+        state->cc.cy = 1;
+    }
+    uint8_t res = state->registers[A];
+
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    _update_flag_ac_add(state, acc_val, val, false);
+
+}
+
 //!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
