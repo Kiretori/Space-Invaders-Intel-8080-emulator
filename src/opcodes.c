@@ -155,6 +155,23 @@ void ADC_M(State8080 *state) {
     state->registers[A] = answer;
 }
 
+
+void ACI(State8080 *state, uint8_t byte) {
+    uint8_t val1 = state->registers[A];
+    uint8_t answer = val1 + byte + state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_add(state, val1, byte, true);
+    _update_flag_cy_add(state, val1 + byte, true);
+
+    state->registers[A] = answer;
+
+    state->pc += 1;
+}
+
+
 void INR_R(State8080 *state, REGISTERS reg) {
     uint16_t answer = state->registers[reg] + 1;
     uint8_t value = state->registers[reg];

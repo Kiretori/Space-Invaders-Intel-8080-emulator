@@ -17,6 +17,8 @@ void ADC_R(State8080 *state, REGISTERS reg);
 
 void ADC_M(State8080 *state);
 
+void ACI(State8080 *state, uint8_t byte);
+
 void DCR_R(State8080 *state, REGISTERS reg);
 
 void DCR_M(State8080 *state);
