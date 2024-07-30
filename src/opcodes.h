@@ -34,6 +34,8 @@ void INX_SP(State8080 *state, REGISTERS reg);
 void DCX_PAIR(State8080 *state, REGISTERS reg);
 
 void DCX_SP(State8080 *state);
+
+void DAD(State8080 *state, REGISTERS reg);
 //================================= Branch instructions: =================================//
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2);
 

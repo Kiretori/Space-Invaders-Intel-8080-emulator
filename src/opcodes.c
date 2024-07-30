@@ -38,6 +38,10 @@ static void _update_flag_cy_sub(State8080 *state, uint8_t val1, uint8_t val2, bo
     state->cc.cy = res > 0xFF;
 }
 
+static void _update_flag_cy_add_16(State8080 *state, uint32_t answer) {
+    state->cc.cy = (answer > 0xFFFF);
+}
+
 static void _update_flag_cy_add(State8080 *state, uint16_t answer, bool add_carry) {
     int carry = add_carry ? state->cc.cy : 0;
     uint16_t res = answer + carry;
@@ -236,13 +240,25 @@ void DCR_M(State8080 *state) {
 void DCX_PAIR(State8080 *state, REGISTERS reg) {
     uint16_t pair_value = (state->registers[reg] << 8) | state->registers[reg + 1];
     pair_value--;
-    state->registers[reg] = (uint8_t) (pair_value >> 8);
-    state->registers[reg + 1] = (uint8_t) (pair_value & 0xFF);
+    
 }
 
 
 void DCX_SP(State8080 *state) {
     state->sp -= 1;
+}
+
+
+void DAD(State8080 *state, REGISTERS reg) {
+    uint16_t pair_value1 = (state->registers[H] << 8) | state->registers[L];
+    uint16_t pair_value2 = (state->registers[reg] << 8) | state->registers[reg + 1];
+
+    uint32_t answer = pair_value1 + pair_value2;
+
+    _update_flag_cy_add_16(state, answer);
+    
+    state->registers[H] = (uint8_t) ((answer >> 8) & 0xFF);
+    state->registers[L] = (uint8_t) (answer & 0xFF);
 }
 
 //!================================= Branch instructions: =================================//
