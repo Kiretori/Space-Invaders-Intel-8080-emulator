@@ -58,7 +58,7 @@ static void _update_flag_ac_sub(State8080 *state, uint8_t val1, uint8_t val2, bo
 static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bool add_carry) {
     int carry = add_carry ? state->cc.cy : 0;
     uint8_t value = (val1 & 0xF) + (val2 & 0xF) + carry;
-    state->cc.ac = ((val1 & 0xF) + (val2 & 0xF) + carry) > 0xF;
+    state->cc.ac = (value + carry) > 0xF;
 }
 
 
@@ -97,7 +97,7 @@ void ADD_R(State8080 *state, REGISTERS reg) {
 }
 
 
-void ADD_I(State8080 *state, uint8_t value) {
+void ADI(State8080 *state, uint8_t value) {
     uint16_t answer = (uint16_t) state->registers[A] + (uint16_t) value;
 
     _update_flag_z(state, answer);
@@ -108,6 +108,7 @@ void ADD_I(State8080 *state, uint8_t value) {
     
     state->registers[A] = answer & 0xFF;
 
+    state->pc += 1;
 }
 
 
@@ -253,6 +254,55 @@ void SUI(State8080 *state, uint8_t byte) {
     _update_flag_ac_sub(state, val, byte, false);
 
     state->registers[A] = res;
+
+    state->pc += 1;
+}
+
+
+void SBB_R(State8080 *state, REGISTERS reg) {
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[reg];
+    uint8_t answer = val1 - val2 - state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_sub(state, val1, val2, true);
+    _update_flag_cy_sub(state, val1, val2, true);
+
+    state->registers[A] = answer;
+}
+
+
+void SBB_M(State8080 *state, REGISTERS reg) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->registers[offset];
+    uint8_t answer = val1 - val2 - state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_sub(state, val1, val2, true);
+    _update_flag_cy_sub(state, val1, val2, true);
+
+    state->registers[A] = answer;
+}
+
+
+void SBI(State8080 *state, uint8_t byte) {
+    uint8_t val = state->registers[A];
+    uint8_t answer = val - byte - state->cc.cy;
+
+    _update_flag_z(state, answer);
+    _update_flag_s(state, answer);
+    _update_flag_p(state, answer);
+    _update_flag_ac_sub(state, val, byte, true);
+    _update_flag_cy_sub(state, val, byte, true);
+
+    state->registers[A] = answer;
+
+    state->pc += 1;
 }
 
 
