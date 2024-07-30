@@ -161,34 +161,6 @@ void INX_SP(State8080 *state, REGISTERS reg) {
 }
 
 
-void DCR_R(State8080 *state, REGISTERS reg) {
-    uint8_t value = state->registers[reg];
-    uint16_t answer = value - 1;
-
-    _update_flag_z(state, answer);
-    _update_flag_s(state, answer);
-    _update_flag_p(state, answer);
-    _update_flag_ac_sub(state, value, 1, false);
-
-    state->registers[reg] = answer;
-}
-
-
-void DCR_M(State8080 *state) {
-    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
-    uint8_t value = state->memory[offset];
-    uint8_t answer = value - 1;
-
-    _update_flag_z(state, answer);
-    _update_flag_s(state, answer);  
-    _update_flag_p(state, answer);
-    _update_flag_ac_sub(state, value, 1, false);
-
-    state->memory[offset] -= 1;
-
-}
-
-
 void SUB_R(State8080 *state, REGISTERS reg) {
     uint8_t val1 = state->registers[A];
     uint8_t val2 = state->registers[reg];
@@ -258,6 +230,19 @@ void DCR_M(State8080 *state) {
 
     state->memory[offset] -= 1;
 
+}
+
+
+void DCX_PAIR(State8080 *state, REGISTERS reg) {
+    uint16_t pair_value = (state->registers[reg] << 8) | state->registers[reg + 1];
+    pair_value--;
+    state->registers[reg] = (uint8_t) (pair_value >> 8);
+    state->registers[reg + 1] = (uint8_t) (pair_value & 0xFF);
+}
+
+
+void DCX_SP(State8080 *state) {
+    state->sp -= 1;
 }
 
 //!================================= Branch instructions: =================================//
