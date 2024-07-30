@@ -419,3 +419,16 @@ void CMP_M(State8080 *state) {
     _update_flag_ac_sub(state, val1, val2, false);
 
 }
+
+
+void CPI(State8080 *state, uint8_t byte) {
+    uint8_t res = state->registers[A] - byte;
+    uint8_t val = state->registers[A];
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val, byte, false);
+    _update_flag_ac_sub(state, val, byte, false);
+
+    state->pc += 1;
+}
