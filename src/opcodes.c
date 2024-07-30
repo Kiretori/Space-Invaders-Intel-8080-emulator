@@ -395,7 +395,7 @@ void ORI(State8080 *state, uint8_t byte) {
 }
 
 
-void CMP(State8080 *state, REGISTERS reg) {
+void CMP_R(State8080 *state, REGISTERS reg) {
     uint8_t res = state->registers[A] - state->registers[reg];
     uint8_t val1 = state->registers[A];
     uint8_t val2 = state->registers[reg];
@@ -404,4 +404,18 @@ void CMP(State8080 *state, REGISTERS reg) {
     _update_flag_p(state, res);
     _update_flag_cy_sub(state, val1, val2, false);
     _update_flag_ac_sub(state, val1, val2, false);
+}
+
+
+void CMP_M(State8080 *state) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    uint8_t res = state->registers[A] - state->memory[offset];
+    uint8_t val1 = state->registers[A];
+    uint8_t val2 = state->memory[offset];
+    _update_flag_z(state, res);
+    _update_flag_s(state, res);
+    _update_flag_p(state, res);
+    _update_flag_cy_sub(state, val1, val2, false);
+    _update_flag_ac_sub(state, val1, val2, false);
+
 }
