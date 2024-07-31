@@ -6,7 +6,10 @@
 
 #define REG_NUMBER 7
 #define MAX_MEM 0x10000
+#define NUM_IO 0xFF
 
+typedef uint8_t (*input_ptr)(void);
+typedef void (*output_ptr)(uint8_t);
 
 typedef struct ConditionCodes {
 	uint8_t z:1;
@@ -24,6 +27,10 @@ typedef struct State8080 {
 	uint8_t memory[MAX_MEM];
 	ConditionCodes cc;
 	uint8_t int_enable;
+
+	input_ptr input[NUM_IO];
+	output_ptr output[NUM_IO];
+
 } State8080;
 
 typedef enum REGISTERS {

@@ -692,6 +692,15 @@ void POP_PSW(State8080 *state) {
 }
 
 
+void XTHL(State8080 *state) {
+    _swap(&state->registers[L], &state->memory[state->sp]);
+    _swap(&state->registers[H], &state->memory[(uint16_t)(state->sp + 1)]);
+}
+
+
+void SPHL(State8080 *state) {
+    state->sp = (state->registers[H] << 8) | (state->registers[L]);
+}
 
 //!================================= Data Transfer instructions: =================================//
 
