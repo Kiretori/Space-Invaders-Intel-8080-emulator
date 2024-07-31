@@ -121,6 +121,10 @@ void POP_PSW(State8080 *state);
 void XTHL(State8080 *state);
 
 void SPHL(State8080 *state);
+
+void IN(State8080 *state, uint8_t port);
+
+void OUT(State8080 *state, uint8_t port);
 //================================= Data Transfer instructions: =================================//
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte);
 

@@ -702,6 +702,15 @@ void SPHL(State8080 *state) {
     state->sp = (state->registers[H] << 8) | (state->registers[L]);
 }
 
+
+void IN(State8080 *state, uint8_t port) {
+    state->registers[A] = state->input[port]();
+}
+
+
+void OUT(State8080 *state, uint8_t port) {
+    state->output[port](state->registers[A]);
+}
 //!================================= Data Transfer instructions: =================================//
 
 void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
