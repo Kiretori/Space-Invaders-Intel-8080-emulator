@@ -129,6 +129,10 @@ void LDA(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void LDAX(State8080 *state, REGISTERS reg);
 
+void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2);
+
 //================================= Logical instructions: =================================//
 void ANA_R(State8080 *state, REGISTERS reg);
 

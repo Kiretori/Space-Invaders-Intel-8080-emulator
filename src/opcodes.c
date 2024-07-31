@@ -698,7 +698,7 @@ void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void LDA(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    uint8_t offset = (byte2 << 8) | byte1;
+    uint16_t offset = (byte2 << 8) | byte1;
     state->registers[A] = state->memory[offset];
 
     state->pc += 2;
@@ -706,8 +706,26 @@ void LDA(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void LDAX(State8080 *state, REGISTERS reg) {
-    uint8_t offset = (state->registers[reg] << 8) | state->registers[reg + 1];
+    uint16_t offset = (state->registers[reg] << 8) | state->registers[reg + 1];
     state->registers[A] = state->memory[offset];
+}
+
+
+void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    uint16_t offset = (byte2 << 8) | byte1;
+    state->memory[offset] = state->registers[L];
+    state->memory[offset + 1] = state->registers[H];
+
+    state->pc += 2;
+}
+
+
+void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    uint16_t offset = (byte2 << 8) | byte1;
+    state->registers[H] = state->memory[offset + 1];
+    state->registers[L] = state->memory[offset];
+
+    state->pc += 2;
 }
 
 
