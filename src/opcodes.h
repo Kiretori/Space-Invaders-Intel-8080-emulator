@@ -125,6 +125,14 @@ void SPHL(State8080 *state);
 void IN(State8080 *state, uint8_t port);
 
 void OUT(State8080 *state, uint8_t port);
+
+void EI(State8080 *state);
+
+void DI(State8080 *state);
+
+void HLT(State8080 *state);
+
+void EXIT(State8080 *state);
 //================================= Data Transfer instructions: =================================//
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte);
 

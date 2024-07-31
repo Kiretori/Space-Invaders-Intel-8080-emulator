@@ -711,6 +711,27 @@ void IN(State8080 *state, uint8_t port) {
 void OUT(State8080 *state, uint8_t port) {
     state->output[port](state->registers[A]);
 }
+
+
+void EI(State8080 *state) {
+    state->int_enable = 1;
+}
+
+
+void DI(State8080 *state) {
+    state->int_enable = 0;
+}
+
+
+void HLT(State8080 *state) {
+    state->halt = true;
+}
+
+
+void EXIT(State8080 *state) {
+    state->exit = true;
+}
+
 //!================================= Data Transfer instructions: =================================//
 
 void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
