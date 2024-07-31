@@ -87,6 +87,10 @@ void RP(State8080 *state);
 
 void RM(State8080 *state);
 
+void RST_N(State8080 *state, int n);
+
+void PCHL(State8080 *state);
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void JNZ(State8080 *state, uint8_t byte1, uint8_t byte2);

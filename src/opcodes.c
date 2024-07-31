@@ -535,6 +535,20 @@ void RM(State8080 *state) {
 }
 
 
+void RST_N(State8080 *state, int n) {
+    state->memory[state->sp - 1] = state->pc >> 8;
+    state->memory[state->sp - 2] = state->pc & 0xFF;
+
+    state->sp -= 2;
+    state->pc = 8 * n;
+}
+
+
+void PCHL(State8080 *state) {
+    state->pc = ((state->registers[H]) << 8) | (state->registers[L]);
+}
+
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2) {
     state->pc = (byte2 << 8) | (byte1);
 }
