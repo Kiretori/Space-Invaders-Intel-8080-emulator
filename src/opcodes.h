@@ -114,6 +114,10 @@ void PUSH(State8080 *state, REGISTERS src);
 
 void PUSH_PSW(State8080 *state);
 
+void POP(State8080 *state, REGISTERS reg);
+
+void POP_PSW(State8080 *state);
+
 //================================= Data Transfer instructions: =================================//
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte);
 

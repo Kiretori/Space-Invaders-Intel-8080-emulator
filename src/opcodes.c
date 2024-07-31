@@ -391,8 +391,8 @@ void DAA(State8080 *state) {
 //!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
-    state->memory[state->sp - 1] = state->pc >> 8;
-    state->memory[state->sp - 2] = state->pc & 0xFF;
+    state->memory[(uint16_t)(state->sp - 1)] = state->pc >> 8;
+    state->memory[(uint16_t)(state->sp - 2)] = state->pc & 0xFF;
     
     state->sp -= 2;
     state->pc = (byte2 << 8) | byte1;
@@ -481,7 +481,7 @@ void CM(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void RET(State8080 *state) {
-    state->pc = (state->memory[state->sp + 1] << 8) | (state->memory[state->sp]);
+    state->pc = (state->memory[(uint16_t)(state->sp + 1)] << 8) | (state->memory[state->sp]);
     state->sp += 2; 
 }
 
@@ -543,8 +543,8 @@ void RM(State8080 *state) {
 
 
 void RST_N(State8080 *state, int n) {
-    state->memory[state->sp - 1] = state->pc >> 8;
-    state->memory[state->sp - 2] = state->pc & 0xFF;
+    state->memory[(uint16_t)(state->sp - 1)] = state->pc >> 8;
+    state->memory[(uint16_t)(state->sp - 2)] = state->pc & 0xFF;
 
     state->sp -= 2;
     state->pc = 8 * n;
@@ -645,16 +645,16 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 //!=================================Stack and I/O instructions: =================================//
 
-void PUSH(State8080 *state, REGISTERS src) {  // Use PUSH(state, H) for PUSH M 
-    state->memory[state->sp - 1] = state->registers[src];
-    state->memory[state->sp - 2] = state->registers[src + 1];
+void PUSH(State8080 *state, REGISTERS reg) {  // Use PUSH(state, H) for PUSH M 
+    state->memory[(uint16_t)(state->sp - 1)] = state->registers[reg];
+    state->memory[(uint16_t)(state->sp - 2)] = state->registers[reg + 1];
 
     state->sp -= 2;
 }
 
 
 void PUSH_PSW(State8080 *state) {
-    state->memory[state->sp-1] = state->registers[A];
+    state->memory[(uint16_t)(state->sp - 1)] = state->registers[A];
 
     uint8_t psw = (state->cc.s << 7) |
                   (state->cc.z << 6) |
@@ -663,10 +663,35 @@ void PUSH_PSW(State8080 *state) {
                   (1 << 1) |
                   state->cc.cy;
             
-    state->memory[state->sp-2] = psw;
+    state->memory[(uint16_t)(state->sp - 2)] = psw;
 
     state->sp -= 2;
 } 
+
+
+void POP(State8080 *state, REGISTERS reg) {
+    state->registers[reg + 1] = state->memory[state->sp];
+    state->registers[reg] = state->memory[(uint16_t)(state->sp + 1)];
+
+    state->sp += 2;
+}
+
+
+void POP_PSW(State8080 *state) {
+    uint8_t psw = state->memory[state->sp];
+
+    state->cc.cy = psw & 1;
+    state->cc.p = psw & (1 << 2);
+    state->cc.ac = psw & (1 << 4);
+    state->cc.z = psw & (1 << 6);
+    state->cc.s = psw & (1 << 7);
+
+    state->registers[A] = state->memory[(uint16_t)(state->sp + 1)];
+
+    state->sp += 2;
+}
+
+
 
 //!================================= Data Transfer instructions: =================================//
 
@@ -721,7 +746,7 @@ void LDAX(State8080 *state, REGISTERS reg) {
 void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
     uint16_t offset = (byte2 << 8) | byte1;
     state->memory[offset] = state->registers[L];
-    state->memory[offset + 1] = state->registers[H];
+    state->memory[(uint16_t)(offset + 1)] = state->registers[H];
 
     state->pc += 2;
 }
@@ -729,7 +754,7 @@ void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
     uint16_t offset = (byte2 << 8) | byte1;
-    state->registers[H] = state->memory[offset + 1];
+    state->registers[H] = state->memory[(uint16_t)(offset + 1)];
     state->registers[L] = state->memory[offset];
 
     state->pc += 2;
