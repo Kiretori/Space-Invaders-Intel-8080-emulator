@@ -69,6 +69,24 @@ void CP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void CM(State8080 *state, uint8_t byte1, uint8_t byte2);
 
+void RET(State8080 *state);
+
+void RNZ(State8080 *state);
+
+void RZ(State8080 *state);
+
+void RNC(State8080 *state);
+
+void RC(State8080 *state);
+
+void RPO(State8080 *state);
+
+void RPE(State8080 *state);
+
+void RP(State8080 *state);
+
+void RM(State8080 *state);
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void JNZ(State8080 *state, uint8_t byte1, uint8_t byte2);

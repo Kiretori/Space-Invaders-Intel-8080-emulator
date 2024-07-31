@@ -471,6 +471,69 @@ void CM(State8080 *state, uint8_t byte1, uint8_t byte2) {
     }
 }
 
+
+void RET(State8080 *state) {
+    state->pc = (state->memory[state->sp + 1] << 8) | (state->memory[state->sp]);
+    state->sp += 2; 
+}
+
+
+void RNZ(State8080 *state) {
+    if (state->cc.z = 0) {
+        RET(state);
+    }
+}
+
+
+void RZ(State8080 *state) {
+    if (state->cc.z = 1) {
+        RET(state);
+    }
+}
+
+
+void RNC(State8080 *state) {
+    if (state->cc.cy = 0) {
+        RET(state);
+    }
+}
+
+
+void RC(State8080 *state) {
+    if (state->cc.cy = 1) {
+        RET(state);
+    }
+}
+
+
+void RPO(State8080 *state) {
+    if (state->cc.p = 0) {
+        RET(state);
+    }
+}
+
+
+void RPE(State8080 *state) {
+    if (state->cc.p = 1) {
+        RET(state);
+    }
+}
+
+
+void RP(State8080 *state) {
+    if (state->cc.s = 0) {
+        RET(state);
+    }
+}
+
+
+void RM(State8080 *state) {
+    if (state->cc.s = 1) {
+        RET(state);
+    }
+}
+
+
 void JMP(State8080 *state, uint8_t byte1, uint8_t byte2) {
     state->pc = (byte2 << 8) | (byte1);
 }
