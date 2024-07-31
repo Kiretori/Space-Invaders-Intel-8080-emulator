@@ -133,6 +133,10 @@ void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2);
 
+void STAX(State8080 *state, REGISTERS reg);
+
+void XCHG(State8080 *state);
+
 //================================= Logical instructions: =================================//
 void ANA_R(State8080 *state, REGISTERS reg);
 

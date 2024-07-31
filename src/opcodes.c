@@ -62,7 +62,6 @@ static void _update_flag_ac_add(State8080 *state, uint8_t val1, uint8_t val2, bo
 }
 
 
-
 static void _update_flag_and(State8080 *state, uint8_t res, uint8_t val1, uint8_t val2) {
     _update_flag_z(state, res);
     _update_flag_s(state, res);
@@ -78,6 +77,14 @@ static void _update_flag_or(State8080  *state, int8_t res) {
     state->cc.cy = 0;
     state->cc.ac = 0;
 } 
+
+static void _swap(uint8_t *val1, uint8_t *val2) {
+    uint8_t temp = *val1;
+
+    *val1 = *val2;
+    *val2 = temp;
+}
+
 
 //!================================= Arithmetic instructions: =================================//
 
@@ -728,6 +735,17 @@ void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
     state->pc += 2;
 }
 
+
+void STAX(State8080 *state, REGISTERS reg) {
+    uint16_t offset = (state->registers[reg] << 8) | state->registers[reg + 1];
+    state->memory[offset] = state->registers[A];
+}
+
+
+void XCHG(State8080 *state) {
+    _swap(&state->registers[H], &state->registers[D]);
+    _swap(&state->registers[L], &state->registers[E]);
+}
 
 //!================================= Logical instructions: =================================//
 
