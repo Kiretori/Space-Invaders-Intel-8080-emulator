@@ -125,6 +125,10 @@ void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 void STA(State8080 *state, uint8_t byte1, uint8_t byte2);
 
+void LDA(State8080 *state, uint8_t byte1, uint8_t byte2);
+
+void LDAX(State8080 *state, REGISTERS reg);
+
 //================================= Logical instructions: =================================//
 void ANA_R(State8080 *state, REGISTERS reg);
 
