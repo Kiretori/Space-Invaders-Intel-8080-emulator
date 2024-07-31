@@ -384,9 +384,9 @@ void DAA(State8080 *state) {
 //!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
-    uint16_t return_adr = state->pc + 2;
-    state->memory[state->sp - 1] = return_adr >> 8;
-    state->memory[state->sp - 2] = return_adr & 0xFF;
+    state->memory[state->sp - 1] = state->pc >> 8;
+    state->memory[state->sp - 2] = state->pc & 0xFF;
+    
     state->sp -= 2;
     state->pc = (byte2 << 8) | byte1;
 }
