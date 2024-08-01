@@ -2,7 +2,7 @@
 #define EMU8080_H
 
 #include <stdint.h>
-
+#include <stdbool.h>
 
 #define REG_NUMBER 7
 #define MAX_MEM 0x10000
@@ -26,10 +26,13 @@ typedef struct State8080 {
 	uint16_t pc;
 	uint8_t memory[MAX_MEM];
 	ConditionCodes cc;
-	uint8_t int_enable;
+	uint8_t int_enable:1;
 
 	input_ptr input[NUM_IO];
 	output_ptr output[NUM_IO];
+
+	bool halt;
+	bool exit;
 
 } State8080;
 
