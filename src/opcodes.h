@@ -187,4 +187,14 @@ void CMC(State8080 *state);
 
 void STC(State8080 *state);
 
+//================================= Rotate instructions: =================================//
+
+void RRC(State8080 *state);
+
+void RLC(State8080 *state);
+
+void RAR(State8080 *state);
+
+void RAL(State8080 *state);
+
 #endif

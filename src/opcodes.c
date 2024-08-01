@@ -954,3 +954,45 @@ void CMC(State8080 *state) {
 void STC(State8080 *state) {
     state->cc.cy = 1;
 }
+
+
+//!================================= Rotate instructions: =================================//
+
+void RRC(State8080 *state) {
+    uint8_t acc_val = state->registers[A];
+    uint8_t lsb = acc_val & 1;
+    acc_val = (acc_val >> 1) | (lsb << 7);
+    
+    state->cc.cy = lsb;
+    state->registers[A] = acc_val;
+}
+
+
+void RLC(State8080 *state) {
+    uint8_t acc_val = state->registers[A];
+    uint8_t msb = acc_val >> 7;
+    acc_val = (acc_val << 1) | msb;
+
+    state->cc.cy = msb;
+    state->registers[A] = acc_val;
+}
+
+
+void RAR(State8080 *state) {
+    uint8_t acc_val = state->registers[A];
+    uint8_t lsb = acc_val & 1;
+    acc_val = (acc_val >> 1) | (state->cc.cy << 7);
+
+    state->cc.cy = lsb;
+    state->registers[A] = acc_val;
+}
+
+
+void RAL(State8080 *state) {
+    uint8_t acc_val = state->registers[A];
+    uint8_t msb = acc_val >> 7;
+    acc_val = (acc_val << 1) | state->cc.cy;
+
+    state->cc.cy = msb;
+    state->registers[A] = acc_val;
+}
