@@ -215,7 +215,7 @@ void INX_PAIR(State8080 *state, REGISTERS reg) {
 }
 
 
-void INX_SP(State8080 *state, REGISTERS reg) {
+void INX_SP(State8080 *state) {
     state->sp += 1;
 }
 
@@ -281,7 +281,7 @@ void SBB_R(State8080 *state, REGISTERS reg) {
 }
 
 
-void SBB_M(State8080 *state, REGISTERS reg) {
+void SBB_M(State8080 *state) {
     uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
     uint8_t val1 = state->registers[A];
     uint8_t val2 = state->registers[offset];
@@ -353,7 +353,7 @@ void DCX_SP(State8080 *state) {
 }
 
 
-void DAD(State8080 *state, REGISTERS reg) {
+void DAD_PAIR(State8080 *state, REGISTERS reg) {
     uint16_t pair_value1 = (state->registers[H] << 8) | state->registers[L];
     uint16_t pair_value2 = (state->registers[reg] << 8) | state->registers[reg + 1];
 
@@ -364,6 +364,17 @@ void DAD(State8080 *state, REGISTERS reg) {
     state->registers[H] = (uint8_t) ((answer >> 8) & 0xFF);
     state->registers[L] = (uint8_t) (answer & 0xFF);
 }
+
+
+void DAD_SP(State8080 *state) {
+    uint16_t pair_value1 = (state->registers[H] << 8) | state->registers[L];
+
+    uint32_t answer = pair_value1 + state->sp;
+    _update_flag_cy_add_16(state, answer);
+
+    state->registers[H] = (uint8_t) ((answer >> 8) & 0xFF);
+    state->registers[L] = (uint8_t) (answer & 0xFF);
+} 
 
 
 void DAA(State8080 *state) {
@@ -645,6 +656,12 @@ void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 //!=================================Stack and I/O instructions: =================================//
 
+
+void NOP() {
+    // Nothing happens
+}
+
+
 void PUSH(State8080 *state, REGISTERS reg) {  // Use PUSH(state, H) for PUSH M 
     state->memory[(uint16_t)(state->sp - 1)] = state->registers[reg];
     state->memory[(uint16_t)(state->sp - 2)] = state->registers[reg + 1];
@@ -742,6 +759,23 @@ void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
 }
 
 
+void MOV_R_R(State8080 *state, REGISTERS reg1, REGISTERS reg2) {
+    state->registers[reg1] = state->registers[reg2];
+}
+
+
+void MOV_R_M(State8080 *state, REGISTERS reg) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    state->registers[reg] = state->memory[offset];
+}
+
+
+void MOV_M_R(State8080 *state, REGISTERS reg) {
+    uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
+    state->memory[offset] = state->registers[reg];
+}
+
+
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte) {
     state->registers[reg] = byte;
 
@@ -756,8 +790,8 @@ void MVI_M(State8080 *state, uint8_t byte) {
 }
 
 
-void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2) {
-    _cpu_set_reg_pair(state, reg1, reg2, byte1, byte2);
+void LXI_PAIR(State8080 *state, REGISTERS reg, uint8_t byte1, uint8_t byte2) {
+    _cpu_set_reg_pair(state, reg, reg + 1, byte1, byte2);
     state->pc += 2;
 }
 

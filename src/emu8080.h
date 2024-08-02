@@ -7,6 +7,8 @@
 #define REG_NUMBER 7
 #define MAX_MEM 0x10000
 #define NUM_IO 0xFF
+#define NUM_OPCODES 0x100
+
 
 typedef uint8_t (*input_ptr)(void);
 typedef void (*output_ptr)(uint8_t);
@@ -33,6 +35,8 @@ typedef struct State8080 {
 
 	bool halt;
 	bool exit;
+
+	unsigned long total_cycles;
 
 } State8080;
 

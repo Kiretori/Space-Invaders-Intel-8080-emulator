@@ -27,7 +27,7 @@ void SUI(State8080 *state, uint8_t byte);
 
 void SBB_R(State8080 *state, REGISTERS reg);
 
-void SBB_M(State8080 *state, REGISTERS reg);
+void SBB_M(State8080 *state);
 
 void SBI(State8080 *state, uint8_t byte);
 
@@ -41,13 +41,15 @@ void INR_M(State8080 *state);
 
 void INX_PAIR(State8080 *state, REGISTERS reg);
 
-void INX_SP(State8080 *state, REGISTERS reg);
+void INX_SP(State8080 *state);
 
 void DCX_PAIR(State8080 *state, REGISTERS reg);
 
 void DCX_SP(State8080 *state);
 
-void DAD(State8080 *state, REGISTERS reg);
+void DAD_PAIR(State8080 *state, REGISTERS reg);
+
+void DAD_SP(State8080 *state);
 
 void DAA(State8080 *state);
 //================================= Branch instructions: =================================//
@@ -110,6 +112,8 @@ void JPE(State8080 *state, uint8_t byte1, uint8_t byte2);
 void JPO(State8080 *state, uint8_t byte1, uint8_t byte2);
 
 //=================================Stack and I/O instructions: =================================//
+void NOP();
+
 void PUSH(State8080 *state, REGISTERS src);
 
 void PUSH_PSW(State8080 *state);
@@ -134,11 +138,17 @@ void HLT(State8080 *state);
 
 void EXIT(State8080 *state);
 //================================= Data Transfer instructions: =================================//
+void MOV_R_R(State8080 *state, REGISTERS reg1, REGISTERS reg2);
+
+void MOV_R_M(State8080 *state, REGISTERS reg);
+
+void MOV_M_R(State8080 *state, REGISTERS reg);
+
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte);
 
 void MVI_M(State8080 *state, uint8_t byte);
 
-void LXI_PAIR(State8080 *state, REGISTERS reg1, REGISTERS reg2, uint8_t byte1, uint8_t byte2);
+void LXI_PAIR(State8080 *state, REGISTERS reg, uint8_t byte1, uint8_t byte2);
 
 void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2);
 

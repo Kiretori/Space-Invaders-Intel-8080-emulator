@@ -2,6 +2,26 @@
 #include <stdlib.h> 
 #include <stdint.h>
 #include "emu8080.h"
+#include "opcodes.h"
+
+const int opcode_cycles[NUM_OPCODES] = {
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4,
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4,
+    4, 10, 16, 5, 5, 5, 7, 4, 4, 10, 16, 5, 5, 5, 7, 4,
+    4, 10, 13, 5, 10, 10, 10, 4, 4, 10, 13, 5, 5, 5, 7, 4,
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+    7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 7, 5,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+    5, 10, 10, 10, 11, 11, 7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
+    5, 10, 10, 10, 11, 11, 7, 11, 5, 10, 10, 10, 11, 17, 7, 11,
+    5, 10, 10, 18, 11, 11, 7, 11, 5, 5, 10, 4, 11, 17, 7, 11,
+    5, 10, 10, 4, 11, 11, 7, 11, 5, 5, 10, 4, 11, 17, 7, 11
+};
 
 void Reset8080(State8080 *state) {
 	// Reseting the state of the CPU
@@ -26,18 +46,285 @@ void Reset8080(State8080 *state) {
 	state->cc.ac = 0;
 	state->cc.pad = 0;	
 
+	state->exit = false;
+	state->halt = false;
+	state->total_cycles = 4;
+
 	state->int_enable = 0;
 
 }
 
 
+void UnimplimentedInstruction(State8080 *state) {
+	printf("Error: Unimplimented instruction\n");
+	state->pc--;
+	Disassemble8080Op(state->memory, state->pc);
+	exit(1);
+}
+
 
 
 int Emulate8080Op(State8080 *state) {
-	unsigned char *opcode = &state->memory[state->pc];
+	uint8_t *opcode = &state->memory[state->pc];
+	state->total_cycles += opcode_cycles[*opcode];
+	state->pc += 1;
 
 	switch(*opcode) {
-		case 0x00: break;
+		case 0x00:	NOP();	break;
+		case 0x01:	LXI_PAIR(state, B, opcode[1], opcode[2]); break;
+		case 0x02:	STAX(state, B); 	break;
+		case 0x03:	INX_PAIR(state, B);		break;
+		case 0x04: 	INR_R(state, B); 		break;
+		case 0x05:	DCR_R(state, B);		break;
+		case 0x06:  MVI_R(state, B, opcode[1]);	break;
+		case 0x07:  RLC(state);			break;
+		case 0x08:  UnimplimentedInstruction(state); break;
+		case 0x09:	DAD_PAIR(state, B);		break;
+		case 0x0A:  LDAX(state, B);		break;
+		case 0x0B:	DCX_PAIR(state, B);	break;
+		case 0x0C:  INR_R(state, C); 	break;
+		case 0x0D:  DCR_R(state, C); 	break;
+		case 0x0E:  MVI_R(state, C, opcode[1]); break;
+		case 0x0F: 	RRC(state);	break;
+		case 0x10:  UnimplimentedInstruction(state); break;
+		case 0x11:  LXI_PAIR(state, D, opcode[1], opcode[2]); break;
+		case 0x12:  STAX(state, D); 	break;
+		case 0x13: 	INX_PAIR(state, D); break;
+		case 0x14:  INR_R(state, D);	break;
+		case 0x15:  DCR_R(state, D); 	break;
+		case 0x16:  MVI_R(state, D, opcode[1]); break;
+		case 0x17:  RAL(state);			break;
+		case 0x18:  UnimplimentedInstruction(state); break;
+		case 0x19:  DAD_PAIR(state, D); 		break;
+		case 0x1a:  LDAX(state, D);		break;
+		case 0x1b:  DCX_PAIR(state, D); break;
+		case 0x1c:  INR_R(state, E);	break;
+		case 0x1e:	MVI_R(state, E, opcode[1]); break;
+		case 0x1f:  RAR(state);			break;
+		case 0x20:  UnimplimentedInstruction(state); break;
+		case 0x21:  LXI_PAIR(state, H, opcode[1], opcode[2]); break;
+		case 0x22:  SHLD(state, opcode[1], opcode[2]);
+		case 0x23:  INX_PAIR(state, H);	break;
+		case 0x24:  INR_R(state, H);  	break;
+		case 0x25:  DCR_R(state, H); 	break;
+		case 0x26:  MVI_R(state, H, opcode[1]); break;
+		case 0x27:  DAA(state);			break;
+		case 0x28:  UnimplimentedInstruction(state); break;
+		case 0x29:  DAD_PAIR(state, H); 		break;
+		case 0x2a:  LHLD(state, opcode[1], opcode[2]); break;
+		case 0x2b:  DCX_PAIR(state, H); break;
+		case 0x2c:  INR_R(state, L); 	break;
+		case 0x2d:  DCR_R(state, L); 	break;
+		case 0x2e:  MVI_R(state, L, opcode[1]); break;
+		case 0x2f:  CMA(state);			break;
+		case 0x30:  UnimplimentedInstruction(state); break;
+		case 0x31:  LXI_SP(state, opcode[1], opcode[2]); break;
+		case 0x32:  STA(state, opcode[1], opcode[2]); break;
+		case 0x33:  INX_SP(state);		break;
+		case 0x34:  INR_M(state);		break;
+		case 0x35:  DCR_M(state);    	break;
+		case 0x36:  MVI_M(state, opcode[1]); break;
+		case 0x37:	STC(state);			break;
+		case 0x38:  UnimplimentedInstruction(state); break;
+		case 0x39:	DAD_SP(state); 		break;
+		case 0x3a:  LDA(state, opcode[1], opcode[2]); break;
+		case 0x3b:  DCX_SP(state);		break;
+		case 0x3c:  INR_R(state, A); 	break;
+		case 0x3d:  DCR_R(state, A);    break;
+		case 0x3e:  MVI_R(state, A, opcode[1]); break;
+		case 0x3f:  CMC(state);			break;
+		case 0x40:  MOV_R_R(state, B, B); break;
+		case 0x41: 	MOV_R_R(state, B, C); break;
+		case 0x42:  MOV_R_R(state, B, D); break;
+		case 0x43:  MOV_R_R(state, B, E); break;
+		case 0x44:  MOV_R_R(state, B, H); break;
+		case 0x45:  MOV_R_R(state, B, L); break;
+		case 0x46:  MOV_R_M(state, B);	break;
+		case 0x47:  MOV_R_R(state, B, A); break;
+		case 0x48:  MOV_R_R(state, C, B);  break;
+		case 0x49:  MOV_R_R(state, C, C);  break;
+		case 0x4a:  MOV_R_R(state, C, D);  break;
+		case 0x4b:  MOV_R_R(state, C, E);  break;
+		case 0x4c:  MOV_R_R(state, C, H);  break;
+		case 0x4d:  MOV_R_R(state, C, L);  break;
+		case 0x4e:  MOV_R_M(state, C);	break;
+		case 0x4f:  MOV_R_R(state, C, A); break;
+		case 0x50:  MOV_R_R(state, D, B); break;
+		case 0x51:  MOV_R_R(state, D, C); break;
+		case 0x52:  MOV_R_R(state, D, D); break;
+		case 0x53:  MOV_R_R(state, D, E); break;
+		case 0x54:  MOV_R_R(state, D, H); break;
+		case 0x55:  MOV_R_R(state, D, L); break;
+		case 0x56:  MOV_R_M(state, D);	break;
+		case 0x57:  MOV_R_R(state, D, A); break;
+		case 0x58:  MOV_R_R(state, E, B); break;
+		case 0x59:  MOV_R_R(state, E, C); break;
+		case 0x5a:  MOV_R_R(state, E, D); break;
+		case 0x5b:  MOV_R_R(state, E, E); break;
+		case 0x5c:  MOV_R_R(state, E, H); break;
+		case 0x5d:  MOV_R_R(state, E, L); break;
+		case 0x5e:  MOV_R_M(state, E);	break;
+		case 0x5f:  MOV_R_R(state, E, A); break;
+		case 0x60:  MOV_R_R(state, H, B); break;
+		case 0x61:  MOV_R_R(state, H, C); break;
+		case 0x62:  MOV_R_R(state, H, D); break;
+		case 0x63:  MOV_R_R(state, H, E); break;
+		case 0x64:  MOV_R_R(state, H, H); break;
+		case 0x65:  MOV_R_R(state, H, L); break;
+		case 0x66:  MOV_R_M(state, H); 	break;
+		case 0x67:  MOV_R_R(state, H, A); break;
+		case 0x68:  MOV_R_R(state, L, B); break;
+		case 0x69:  MOV_R_R(state, L, C); break;
+		case 0x6a:  MOV_R_R(state, L, D); break;
+		case 0x6b:  MOV_R_R(state, L, E); break;
+		case 0x6c:  MOV_R_R(state, L, H); break;
+		case 0x6d:  MOV_R_R(state, L, L); break;
+		case 0x6e:  MOV_R_M(state, L);	break;
+		case 0x6f:	MOV_R_R(state, L, A);	break;
+		case 0x70:  MOV_M_R(state, B);	break;
+		case 0x71:  MOV_M_R(state, C);	break;
+		case 0x72:  MOV_M_R(state, D);	break;
+		case 0x73:  MOV_M_R(state, E);	break;
+		case 0x74:  MOV_M_R(state, H);	break;
+		case 0x75:  MOV_M_R(state, L);	break;
+		case 0x76:  HLT(state);			break;
+		case 0x77:  MOV_M_R(state, A);	break;
+		case 0x78:  MOV_R_R(state, A, B); break;
+		case 0x79:  MOV_R_R(state, A, C); break;
+		case 0x7a:  MOV_R_R(state, A, D); break;
+		case 0x7b:  MOV_R_R(state, A, E); break;
+		case 0x7c:  MOV_R_R(state, A, H); break;
+		case 0x7d:  MOV_R_R(state, A, L); break;
+		case 0x7e:  MOV_R_M(state, A);	break;
+		case 0x7f:  MOV_R_R(state, A, A); break;
+		case 0x80:  ADD_R(state, B);	break;
+		case 0x81:  ADD_R(state, C);	break;
+		case 0x82:  ADD_R(state, D);	break;
+		case 0x83:  ADD_R(state, E);	break;
+		case 0x84:  ADD_R(state, H);	break;
+		case 0x85:  ADD_R(state, L);	break;
+		case 0x86:  ADD_M(state); 		break;
+		case 0x87:  ADD_R(state, A); 	break;
+		case 0x88:  ADC_R(state, B); 	break;
+		case 0x89:  ADC_R(state, C); 	break;
+		case 0x8a:  ADC_R(state, D); 	break;
+		case 0x8b:  ADC_R(state, E); 	break;
+		case 0x8c:  ADC_R(state, H); 	break;
+		case 0x8d:  ADC_R(state, L); 	break;
+		case 0x8e:  ADC_M(state); 		break;
+		case 0x8f:  ADC_R(state, A); 	break;
+		case 0x90:  SUB_R(state, B); 	break;
+		case 0x91:  SUB_R(state, C); 	break;
+		case 0x92:  SUB_R(state, D); 	break;
+		case 0x93:  SUB_R(state, E); 	break;
+		case 0x94:  SUB_R(state, H); 	break;
+		case 0x95:  SUB_R(state, L); 	break;
+		case 0x96:  SUB_M(state); 		break;
+		case 0x97:  SUB_R(state, A);  	break;
+		case 0x98:  SBB_R(state, B); 	break;
+		case 0x99:  SBB_R(state, C); 	break;
+		case 0x9a:  SBB_R(state, D); 	break;
+		case 0x9b:  SBB_R(state, E); 	break;
+		case 0x9c:  SBB_R(state, H); 	break;
+		case 0x9d:  SBB_R(state, L); 	break;
+		case 0x9e:  SBB_M(state); 		break;
+		case 0x9f:  SBB_R(state, A); 	break;
+		case 0xa0:  ANA_R(state, B); 	break;
+		case 0xa1:  ANA_R(state, C); 	break;
+		case 0xa2:  ANA_R(state, D); 	break;
+		case 0xa3:  ANA_R(state, E); 	break;
+		case 0xa4:  ANA_R(state, H); 	break;
+		case 0xa5:  ANA_R(state, L); 	break;
+		case 0xa6:  ANA_M(state); 		break;
+		case 0xa7:  ANA_R(state, A); 	break;
+		case 0xa8:  XRA_R(state, B); 	break;
+		case 0xa9:  XRA_R(state, C); 	break;
+		case 0xaa:  XRA_R(state, D); 	break;
+		case 0xab:  XRA_R(state, E); 	break;
+		case 0xac:  XRA_R(state, H); 	break;
+		case 0xad:  XRA_R(state, L); 	break;
+		case 0xae:  XRA_M(state); 		break;
+		case 0xaf:  XRA_R(state, A); 	break;
+		case 0xb0:  ORA_R(state, B); 	break;
+		case 0xb1:  ORA_R(state, C); 	break;
+		case 0xb2:  ORA_R(state, D); 	break;
+		case 0xb3:  ORA_R(state, E); 	break;
+		case 0xb4:  ORA_R(state, H); 	break;
+		case 0xb5:  ORA_R(state, L); 	break;
+		case 0xb6:  ORA_M(state); 		break;
+		case 0xb7:  ORA_R(state, A); 	break;
+		case 0xb8:  CMP_R(state, B); 	break;
+		case 0xb9:  CMP_R(state, C); 	break;
+		case 0xba:  CMP_R(state, D); 	break;
+		case 0xbb:  CMP_R(state, E); 	break;
+		case 0xbc:  CMP_R(state, H); 	break;
+		case 0xbd:  CMP_R(state, L); 	break;
+		case 0xbe:  CMP_M(state); 		break;
+		case 0xbf:  CMP_R(state, A); 	break;
+		case 0xc0:  RNZ(state); 		break;
+		case 0xc1:	POP(state, B); 		break;
+		case 0xc2:  JNZ(state, opcode[1], opcode[2]); break;
+		case 0xc3:  JMP(state, opcode[1], opcode[2]); break;
+		case 0xc4:  CNZ(state, opcode[1], opcode[2]); break;
+		case 0xc5:  PUSH(state, B); 	break;
+		case 0xc6:  ADI(state, opcode[1]); break;
+		case 0xc7:  RST_N(state, 0); 	break;
+		case 0xc8:  RZ(state); 			break;
+		case 0xc9:  RET(state); 		break;
+		case 0xca: 	JZ(state, opcode[1], opcode[2]); break;
+		case 0xcb:  UnimplimentedInstruction(state); break;
+		case 0xcc:	CZ(state, opcode[1], opcode[2]); break;
+		case 0xcd:	CALL(state, opcode[1], opcode[2]); break;
+		case 0xce:  ACI(state, opcode[1]); break;
+		case 0xcf:  RST_N(state, 1); 	break;
+		case 0xd0: 	RNC(state); 		break;
+		case 0xd1:	POP(state, D); 		break;
+		case 0xd2:	JNC(state, opcode[1], opcode[2]); break;
+		case 0xd3:	OUT(state, opcode[1]); break;
+		case 0xd4:	CNC(state, opcode[1], opcode[2]); break;
+		case 0xd5:  PUSH(state, D); 	break;
+		case 0xd6:	SUI(state, opcode[1]); break;
+		case 0xd7:	RST_N(state, 2); 	break;
+		case 0xd8:	RC(state); 			break;
+		case 0xd9:  UnimplimentedInstruction(state); break;
+		case 0xda:  JC(state, opcode[1], opcode[2]); break;
+		case 0xdb:  IN(state, opcode[1]); break;
+		case 0xdc:	CC(state, opcode[1], opcode[2]); break;
+		case 0xdd:  UnimplimentedInstruction(state); break;
+		case 0xde:  SBI(state, opcode[1]); break;
+		case 0xdf:  RST_N(state, 3);	break;
+		case 0xe0:  RPO(state); 		break;
+		case 0xe1:  POP(state, H); 		break;
+		case 0xe2:  JPO(state, opcode[1], opcode[2]); break;
+		case 0xe3:  XTHL(state); 		break;
+		case 0xe4:	CPO(state, opcode[1], opcode[2]); break;
+		case 0xe5:  PUSH(state, H);		break;
+		case 0xe6:	ANI(state, opcode[1]); break;
+		case 0xe7:  RST_N(state, 4); 	break;
+		case 0xe8:	RPE(state); 		break;
+		case 0xe9:	PCHL(state); 		break;
+		case 0xea:  JPE(state, opcode[1], opcode[2]); break;
+		case 0xeb:  XCHG(state); 		break;
+		case 0xec:  CPE(state, opcode[1], opcode[2]); break;
+		case 0xed:  UnimplimentedInstruction(state); break;
+		case 0xee:  XRI(state, opcode[1]); break;
+		case 0xef:  RST_N(state, 5); 	break;
+		case 0xf0:  RP(state); 			break;
+		case 0xf1:  POP_PSW(state);		break;
+		case 0xf2:  JP(state, opcode[1], opcode[2]); break;
+		case 0xf3:	DI(state); 			break;
+		case 0xf4:  CP(state, opcode[1], opcode[2]); break;
+		case 0xf5:  PUSH_PSW(state); 	break;
+		case 0xf6:  ORI(state, opcode[1]); break;
+		case 0xf7:  RST_N(state, 6); 	break;
+		case 0xf8:	RM(state);			break;
+		case 0xf9:	SPHL(state);		break;
+		case 0xfa:	JM(state, opcode[1], opcode[2]); break;
+		case 0xfb: 	EI(state); 			break;
+		case 0xfc: 	CM(state, opcode[1], opcode[2]); break;
+		case 0xfd:  UnimplimentedInstruction(state); break;
+		case 0xfe:  CPI(state, opcode[1]); break;
+		case 0xff:  RST_N(state, 7); 	break;
 	}
 }
 
@@ -326,12 +613,11 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc)
 }
 
 
-void UnimplimentedInstruction(State8080 *state) {
-	printf("Error: Unimplimented instruction\n");
-	state->pc--;
-	Disassemble8080Op(state->memory, state->pc);
-	exit(1);
-}
+
+
+
+
+
 
 #ifndef TESTING
 int main(int argc, char **argv) {
