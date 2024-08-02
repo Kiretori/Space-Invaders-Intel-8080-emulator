@@ -636,10 +636,12 @@ int main(int argc, char **argv) {
 	fread(buffer, 1, cf_size, code_file);
 	fclose(code_file);
 
-	int pc = 0;
-
-	while (pc < cf_size) {
-		pc += Disassemble8080Op(buffer, pc);
+	State8080 *cpu = malloc(sizeof(State8080));
+	Reset8080(cpu);
+	
+	while (cpu->pc < cf_size) {
+		Disassemble8080Op(buffer, cpu->pc);
+		Emulate8080Op(cpu);
 	}
 
 	return 0;
