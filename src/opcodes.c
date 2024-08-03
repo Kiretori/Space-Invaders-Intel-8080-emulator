@@ -697,11 +697,11 @@ void POP(State8080 *state, REGISTERS reg) {
 void POP_PSW(State8080 *state) {
     uint8_t psw = state->memory[state->sp];
 
-    state->cc.cy = psw & 1;
-    state->cc.p = psw & (1 << 2);
-    state->cc.ac = psw & (1 << 4);
-    state->cc.z = psw & (1 << 6);
-    state->cc.s = psw & (1 << 7);
+    state->cc.cy = (int8_t)(psw & 1);
+    state->cc.p = (int8_t)(psw & (1 << 2));
+    state->cc.ac = (int8_t)(psw & (1 << 4));
+    state->cc.z = (int8_t)(psw & (1 << 6));
+    state->cc.s = (int8_t)(psw & (1 << 7));
 
     state->registers[A] = state->memory[(uint16_t)(state->sp + 1)];
 

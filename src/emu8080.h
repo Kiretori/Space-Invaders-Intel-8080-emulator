@@ -52,7 +52,7 @@ typedef enum REGISTERS {
 
 void Reset8080(State8080 *state);
 
-int Emulate8080Op(State8080 *state);
+void Emulate8080Op(State8080 *state);
 
 int Disassemble8080Op(unsigned char *codebuffer, int pc);
 

@@ -48,7 +48,7 @@ void Reset8080(State8080 *state) {
 
 	state->exit = false;
 	state->halt = false;
-	state->total_cycles = 4;
+	state->total_cycles = 0;
 
 	state->int_enable = 0;
 
@@ -64,7 +64,8 @@ void UnimplimentedInstruction(State8080 *state) {
 
 
 
-int Emulate8080Op(State8080 *state) {
+void Emulate8080Op(State8080 *state) {
+	
 	uint8_t *opcode = &state->memory[state->pc];
 	state->total_cycles += opcode_cycles[*opcode];
 	state->pc += 1;
@@ -614,6 +615,18 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc)
 
 
 
+bool LoadRomIntoMemory(State8080 *state, const char *filename, uint16_t offset) {
+	FILE *rom = fopen(filename, "rb");
+
+    if (rom) {
+        fread(state->memory + offset, MAX_MEM, 1, rom);
+        fclose(rom);
+        return true;
+    }
+
+    return false;
+}
+
 
 
 
@@ -631,13 +644,20 @@ int main(int argc, char **argv) {
 	int cf_size = ftell(code_file);
 	fseek(code_file, 0L, SEEK_SET);
 
-	unsigned char *buffer = malloc(cf_size);
+	State8080 *cpu = malloc(sizeof(State8080));
 
+	uint8_t *buffer = malloc(cf_size);
 	fread(buffer, 1, cf_size, code_file);
 	fclose(code_file);
 
-	State8080 *cpu = malloc(sizeof(State8080));
+
 	Reset8080(cpu);
+	LoadRomIntoMemory(cpu, "roms/invaders.h", 0x0000);
+	LoadRomIntoMemory(cpu, "roms/invaders.g", 0x0800);
+	LoadRomIntoMemory(cpu, "roms/invaders.f", 0x1000);
+	LoadRomIntoMemory(cpu, "roms/invaders.e", 0x1800);
+	
+	
 	
 	while (cpu->pc < cf_size) {
 		Disassemble8080Op(buffer, cpu->pc);
