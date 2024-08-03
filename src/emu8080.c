@@ -275,7 +275,7 @@ void Emulate8080Op(State8080 *state) {
 		case 0xca: 	JZ(state, opcode[1], opcode[2]); break;
 		case 0xcb:  UnimplimentedInstruction(state); break;
 		case 0xcc:	CZ(state, opcode[1], opcode[2]); break;
-		case 0xcd:	CALL(state, opcode[1], opcode[2]); break;
+		case 0xcd:	CALL(state, opcode[1], opcode[2]);  printf("RET Address: %04x", state->pc); break;
 		case 0xce:  ACI(state, opcode[1]); break;
 		case 0xcf:  RST_N(state, 1); 	break;
 		case 0xd0: 	RNC(state); 		break;
@@ -635,8 +635,15 @@ int LogOutput(State8080 *state, char *file_path, int *instruct_count) {
 	}
 	*instruct_count = *instruct_count + 1;
 
-	fprintf(log_file, "%d   A: %02x, B: %02x, C: %02x, D: %02x, E: %02x, H: %02x, L: %02x, pc: %04x, sp: %04x\n", *instruct_count, state->registers[A],
-			state->registers[B], state->registers[C], state->registers[D], state->registers[E], state->registers[H], state->registers[L], state->pc, state->sp);
+	uint8_t flags = (state->cc.z << 4) |
+					(state->cc.s << 5) |
+					(state->cc.p << 2) |
+					(state->cc.cy << 1) |
+					(state->cc.ac << 3) |
+					(state->int_enable);
+	uint8_t opcode = state->memory[state->pc];
+	fprintf(log_file, "%d	%02x  A: %02x, BC: %02x%02x, DE: %02x%02x, HL: %02x%02x, pc: %04x, sp: %04x, flags: %04x\n", *instruct_count, opcode,state->registers[A],
+			state->registers[B], state->registers[C], state->registers[D], state->registers[E], state->registers[H], state->registers[L], state->pc, state->sp, flags);
 	
 	fclose(log_file);
 }
@@ -671,8 +678,8 @@ int main(int argc, char **argv) {
 	
 	int instruct_count = 0;
 
-	while (cpu->pc < cf_size) {
-		Disassemble8080Op(buffer, cpu->pc);
+	while (cpu->exit != true) {
+		//Disassemble8080Op(buffer, cpu->pc);
 		Emulate8080Op(cpu);
 		LogOutput(cpu, "logs/log.txt", &instruct_count);
 	}

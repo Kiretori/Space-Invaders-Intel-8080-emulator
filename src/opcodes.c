@@ -105,6 +105,7 @@ void ADD_R(State8080 *state, REGISTERS reg) {
 
 
 void ADI(State8080 *state, uint8_t value) {
+    state->pc += 1;
     uint16_t answer = (uint16_t) state->registers[A] + (uint16_t) value;
 
     _update_flag_z(state, answer);
@@ -115,7 +116,6 @@ void ADI(State8080 *state, uint8_t value) {
     
     state->registers[A] = answer & 0xFF;
 
-    state->pc += 1;
 }
 
 
@@ -165,6 +165,7 @@ void ADC_M(State8080 *state) {
 
 
 void ACI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t val1 = state->registers[A];
     uint8_t answer = val1 + byte + state->cc.cy;
 
@@ -176,7 +177,7 @@ void ACI(State8080 *state, uint8_t byte) {
 
     state->registers[A] = answer;
 
-    state->pc += 1;
+    
 }
 
 
@@ -251,6 +252,7 @@ void SUB_M(State8080 *state) {
 
 
 void SUI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t val = state->registers[A];
     uint8_t res = val - byte;
 
@@ -262,7 +264,6 @@ void SUI(State8080 *state, uint8_t byte) {
 
     state->registers[A] = res;
 
-    state->pc += 1;
 }
 
 
@@ -298,6 +299,7 @@ void SBB_M(State8080 *state) {
 
 
 void SBI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t val = state->registers[A];
     uint8_t answer = val - byte - state->cc.cy;
 
@@ -308,8 +310,7 @@ void SBI(State8080 *state, uint8_t byte) {
     _update_flag_cy_sub(state, val, byte, true);
 
     state->registers[A] = answer;
-
-    state->pc += 1;
+    
 }
 
 
@@ -402,6 +403,10 @@ void DAA(State8080 *state) {
 //!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
+    printf("Stack address is: %02x%02x", byte1, byte2);
+
+    state->pc += 2;
+    
     state->memory[(uint16_t)(state->sp - 1)] = state->pc >> 8;
     state->memory[(uint16_t)(state->sp - 2)] = state->pc & 0xFF;
     
@@ -412,87 +417,71 @@ void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
 
 
 void CZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.z == 1) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CNZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.z == 0) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.cy == 1) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CNC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.cy == 0) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.p == 0) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CPE(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.p == 1) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CP(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.s == 0) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void CM(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.s == 1) {
         CALL(state, byte1, byte2);  
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void RET(State8080 *state) {
-    state->pc = (state->memory[(uint16_t)(state->sp + 1)] << 8) | (state->memory[state->sp]);
+    state->pc = (state->memory[(uint16_t)(state->sp + 1)] << 8) | state->memory[state->sp];
     state->sp += 2; 
 }
 
@@ -573,81 +562,65 @@ void JMP(State8080 *state, uint8_t byte1, uint8_t byte2) {
 
 
 void JNZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.z == 0) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JZ(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.z == 1) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.cy == 1) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JNC(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.cy == 0) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JM(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.s == 1) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JP(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.s == 0) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JPE(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.p == 1) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
 
 void JPO(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     if (state->cc.p == 0) {
         JMP(state, byte1, byte2);
-    }
-    else {
-        state->pc += 2;
     }
 }
 
@@ -698,10 +671,10 @@ void POP_PSW(State8080 *state) {
     uint8_t psw = state->memory[state->sp];
 
     state->cc.cy = (int8_t)(psw & 1);
-    state->cc.p = (int8_t)(psw & (1 << 2));
-    state->cc.ac = (int8_t)(psw & (1 << 4));
-    state->cc.z = (int8_t)(psw & (1 << 6));
-    state->cc.s = (int8_t)(psw & (1 << 7));
+    state->cc.p = (int8_t)((psw >> 2) & 1);
+    state->cc.ac = (int8_t)((psw >> 4) & 1);
+    state->cc.z = (int8_t)((psw >> 6) & 1);
+    state->cc.s = (int8_t)((psw >> 7) & 1);
 
     state->registers[A] = state->memory[(uint16_t)(state->sp + 1)];
 
@@ -745,17 +718,17 @@ void HLT(State8080 *state) {
 }
 
 
-void EXIT(State8080 *state) {
+void XT(State8080 *state) {
     state->exit = true;
 }
 
 //!================================= Data Transfer instructions: =================================//
 
 void STA(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     uint16_t address = ((uint16_t) byte2 << 8) | (byte1);
     state->memory[address] = state->registers[A];
 
-    state->pc += 2;
 }
 
 
@@ -777,36 +750,34 @@ void MOV_M_R(State8080 *state, REGISTERS reg) {
 
 
 void MVI_R(State8080 *state, REGISTERS reg, uint8_t byte) {
+    state->pc += 1; 
     state->registers[reg] = byte;
-
-    state->pc += 1;   
 }
 
 
 void MVI_M(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint16_t offset = (state->registers[H] << 8) | (state->registers[L]);
     state->memory[offset] = byte;
-    state->pc += 1;
 }
 
 
 void LXI_PAIR(State8080 *state, REGISTERS reg, uint8_t byte1, uint8_t byte2) {
-    _cpu_set_reg_pair(state, reg, reg + 1, byte1, byte2);
     state->pc += 2;
+    _cpu_set_reg_pair(state, reg, reg + 1, byte1, byte2);
 }
 
 
 void LXI_SP(State8080 *state, uint8_t byte1, uint8_t byte2) {
-    state->sp = (byte2 << 8) | byte1;
     state->pc += 2;
+    state->sp = (byte2 << 8) | byte1;
 }
 
 
 void LDA(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     uint16_t offset = (byte2 << 8) | byte1;
     state->registers[A] = state->memory[offset];
-
-    state->pc += 2;
 }
 
 
@@ -817,20 +788,18 @@ void LDAX(State8080 *state, REGISTERS reg) {
 
 
 void SHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     uint16_t offset = (byte2 << 8) | byte1;
     state->memory[offset] = state->registers[L];
     state->memory[(uint16_t)(offset + 1)] = state->registers[H];
-
-    state->pc += 2;
 }
 
 
 void LHLD(State8080 *state, uint8_t byte1, uint8_t byte2) {
+    state->pc += 2;
     uint16_t offset = (byte2 << 8) | byte1;
     state->registers[H] = state->memory[(uint16_t)(offset + 1)];
     state->registers[L] = state->memory[offset];
-
-    state->pc += 2;
 }
 
 
@@ -870,14 +839,13 @@ void ANA_M(State8080 *state) {
 
 
 void ANI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t val = state->registers[A];
     uint8_t res = val & byte;
 
     _update_flag_and(state, res, val, byte);
 
-    state->registers[A] = res;  
-
-    state->pc += 1; 
+    state->registers[A] = res;   
 }
 
 
@@ -899,12 +867,11 @@ void XRA_M(State8080 *state) {
 
 
 void XRI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t res = (state->registers[A]) ^ byte;
     _update_flag_or(state, res);
 
     state->registers[A] = res;
-
-    state->pc += 1;
 }
 
 
@@ -927,12 +894,12 @@ void ORA_M(State8080 *state) {
 
 
 void ORI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
     uint8_t res = (state->registers[A]) ^ byte;
     _update_flag_or(state, res);
 
     state->registers[A] = res;
-
-    state->pc += 1;
+    
 }
 
 
@@ -963,6 +930,8 @@ void CMP_M(State8080 *state) {
 
 
 void CPI(State8080 *state, uint8_t byte) {
+    state->pc += 1;
+    
     uint8_t res = state->registers[A] - byte;
     uint8_t val = state->registers[A];
     _update_flag_z(state, res);
@@ -971,7 +940,6 @@ void CPI(State8080 *state, uint8_t byte) {
     _update_flag_cy_sub(state, val, byte, false);
     _update_flag_ac_sub(state, val, byte, false);
 
-    state->pc += 1;
 }
 
 
