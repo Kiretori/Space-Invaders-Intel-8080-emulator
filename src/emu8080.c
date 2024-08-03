@@ -628,7 +628,18 @@ bool LoadRomIntoMemory(State8080 *state, const char *filename, uint16_t offset) 
 }
 
 
+int LogOutput(State8080 *state, char *file_path, int *instruct_count) {
+	FILE *log_file = fopen(file_path, "a");
+	if (log_file == NULL) {
+		return -1;
+	}
+	*instruct_count = *instruct_count + 1;
 
+	fprintf(log_file, "%d   A: %02x, B: %02x, C: %02x, D: %02x, E: %02x, H: %02x, L: %02x, pc: %04x, sp: %04x\n", *instruct_count, state->registers[A],
+			state->registers[B], state->registers[C], state->registers[D], state->registers[E], state->registers[H], state->registers[L], state->pc, state->sp);
+	
+	fclose(log_file);
+}
 
 
 
@@ -658,10 +669,12 @@ int main(int argc, char **argv) {
 	LoadRomIntoMemory(cpu, "roms/invaders.e", 0x1800);
 	
 	
-	
+	int instruct_count = 0;
+
 	while (cpu->pc < cf_size) {
 		Disassemble8080Op(buffer, cpu->pc);
 		Emulate8080Op(cpu);
+		LogOutput(cpu, "logs/log.txt", &instruct_count);
 	}
 
 	return 0;

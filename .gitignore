@@ -3,6 +3,7 @@
 
 # Ignore helper scripts
 /helpers
+/logs
 
 # Ignore object files
 *.o
