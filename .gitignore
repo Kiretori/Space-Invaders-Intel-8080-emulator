@@ -1,11 +1,10 @@
 # Ignore build directory
 /build
-/sounds
-/roms
 /test
 # Ignore helper scripts
 /helpers
 /logs
+/test
 
 # Ignore object files
 *.o
@@ -13,6 +12,15 @@
 # Ignore executable files
 *.exe
 *.out
+
+# Ignore ROM and sound files
+*.COM
+*.h
+*.e
+*.h
+*.f
+*.g
+*.wav
 
 # Ignore temporary files
 *.log
