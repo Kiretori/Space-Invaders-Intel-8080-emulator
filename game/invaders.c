@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
-#include "../src/emu8080.h"
+#include "emu8080.h"
 #include "hardware.h"
 
 // Map IO ports to CPU IO memory
@@ -41,10 +41,10 @@ SDL_Window *create_window() {
 int main(void) {
     State8080 state;
     Reset8080(&state);
-    if    (!LoadRomIntoMemory(&state, "roms/invaders.h", 0x0000)
-        || !LoadRomIntoMemory(&state, "roms/invaders.g", 0x0800)
-        || !LoadRomIntoMemory(&state, "roms/invaders.f", 0x1000)
-        || !LoadRomIntoMemory(&state, "roms/invaders.e", 0x1800)) {
+    if    (!LoadRomIntoMemory(&state, "../roms/invaders.h", 0x0000)
+        || !LoadRomIntoMemory(&state, "../roms/invaders.g", 0x0800)
+        || !LoadRomIntoMemory(&state, "../roms/invaders.f", 0x1000)
+        || !LoadRomIntoMemory(&state, "../roms/invaders.e", 0x1800)) {
         fprintf(stderr, "Could not open Space Invaders ROM files.\n");
         return 1;
     }

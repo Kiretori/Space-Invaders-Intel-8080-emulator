@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
-#include "../src/emu8080.h"
+#include "emu8080.h"
 
 #define DISP_WIDTH 224
 #define DISP_HEIGHT 256

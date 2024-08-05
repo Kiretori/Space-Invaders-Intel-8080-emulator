@@ -123,7 +123,7 @@ void write_shift(uint8_t data) {
 }
 
 void write_shift_amnt(uint8_t data) {
-    shift_amnt_reg = data & 0b111; 
+    shift_amnt_reg = data & 0x7; 
 }
 
 void write_watchdog(uint8_t data) {
@@ -181,16 +181,16 @@ bool audio_init(void) {
         return false;
     }
 
-    sounds[UFO_MOVE_SND] = Mix_LoadWAV("sounds/0.wav");
-    sounds[SHOOT_LASER_SND] = Mix_LoadWAV("sounds/1.wav");
-    sounds[PLAYER_DEATH_SND] = Mix_LoadWAV("sounds/2.wav");
-    sounds[INVADER_DEATH_SND] = Mix_LoadWAV("sounds/3.wav");
-    sounds[FLEET1_SND] = Mix_LoadWAV("sounds/4.wav");
-    sounds[FLEET2_SND] = Mix_LoadWAV("sounds/5.wav");
-    sounds[FLEET3_SND] = Mix_LoadWAV("sounds/6.wav");
-    sounds[FLEET4_SND] = Mix_LoadWAV("sounds/7.wav");
-    sounds[UFO_HIT_SND] = Mix_LoadWAV("sounds/8.wav");
-    sounds[EXTRA_LIFE_SND] = Mix_LoadWAV("sounds/9.wav");
+    sounds[UFO_MOVE_SND] = Mix_LoadWAV("../sounds/0.wav");
+    sounds[SHOOT_LASER_SND] = Mix_LoadWAV("../sounds/1.wav");
+    sounds[PLAYER_DEATH_SND] = Mix_LoadWAV("../sounds/2.wav");
+    sounds[INVADER_DEATH_SND] = Mix_LoadWAV("../sounds/3.wav");
+    sounds[FLEET1_SND] = Mix_LoadWAV("../sounds/4.wav");
+    sounds[FLEET2_SND] = Mix_LoadWAV("../sounds/5.wav");
+    sounds[FLEET3_SND] = Mix_LoadWAV("../sounds/6.wav");
+    sounds[FLEET4_SND] = Mix_LoadWAV("../sounds/7.wav");
+    sounds[UFO_HIT_SND] = Mix_LoadWAV("../sounds/8.wav");
+    sounds[EXTRA_LIFE_SND] = Mix_LoadWAV("../sounds/9.wav");
 
     for (int i = 0; i < NUM_SOUNDS; i++) {
         if (!sounds[i]) {
