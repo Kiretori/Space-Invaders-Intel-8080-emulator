@@ -236,7 +236,7 @@ bool handle_input() {
                 inp1_reg |= LEFT_1P;
                 inp2_reg |= LEFT_2P;
                 break;
-            case SDLK_2:
+            case SDLK_p:
                 inp1_reg |= START_2P;
                 break;
             }
