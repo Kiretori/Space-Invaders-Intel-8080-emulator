@@ -13,7 +13,7 @@ Might make it a full 8080 emulator eventually (work in progress)
 
 ## How To Build
 `cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`  
-`cd build`
+`cd build`  
 `./invaders`
 
 
