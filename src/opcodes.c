@@ -404,10 +404,7 @@ void DAA(State8080 *state) {
 //!================================= Branch instructions: =================================//
 
 void CALL(State8080* state, uint8_t byte1, uint8_t byte2) {
-    printf("Stack address is: %02x%02x", byte1, byte2);
 
-
-    
     state->memory[(uint16_t)(state->sp - 1)] = state->pc >> 8;
     state->memory[(uint16_t)(state->sp - 2)] = state->pc & 0xFF;
     

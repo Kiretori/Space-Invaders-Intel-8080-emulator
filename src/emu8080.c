@@ -82,6 +82,10 @@ static void _init_opcode_size(void) {
 }
 
 
+void cpu_req_interrupt(State8080 *state, uint8_t opcode) {
+    state->interrupt = opcode;
+}
+
 uint16_t get_reg_pair(State8080 *state, REGISTERS reg1, REGISTERS reg2) {
 	return (state->registers[reg1] << 8) | state->registers[reg2];
 }
@@ -147,11 +151,11 @@ void Emulate8080Op(State8080 *state) {
         state->interrupt = -1;
 
     } else {
-        opcode = &state->memory[state->pc];
+        opcode = state->memory[state->pc];
 
         state->pc += opcode_size[opcode];
     }
-	
+
 	state->total_cycles += opcode_cycles[opcode];
 	
 
@@ -360,7 +364,7 @@ void Emulate8080Op(State8080 *state) {
 		case 0xca: 	JZ(state, operands[0], operands[1]); break;
 		case 0xcb:  UnimplimentedInstruction(state); break;
 		case 0xcc:	CZ(state, operands[0], operands[1]); break;
-		case 0xcd:	CALL(state, operands[0], operands[1]);  printf("RET Address: %04x", state->pc); break;
+		case 0xcd:	CALL(state, operands[0], operands[1]); break;
 		case 0xce:  ACI(state, operands[0]); break;
 		case 0xcf:  RST_N(state, 1); 	break;
 		case 0xd0: 	RNC(state); 		break;
@@ -732,43 +736,3 @@ int LogOutput(State8080 *state, char *file_path, int *instruct_count) {
 	
 	fclose(log_file);
 }
-
-
-
-#ifndef TESTING
-int main(int argc, char **argv) {
-    FILE* code_file = fopen(argv[1], "rb");
-	if (code_file == NULL) {
-		printf("There was an error opening %s\n", argv[1]);
-		exit(1);
-	}
-	
-	fseek(code_file, 0L, SEEK_END);
-	int cf_size = ftell(code_file);
-	fseek(code_file, 0L, SEEK_SET);
-
-	State8080 *cpu = malloc(sizeof(State8080));
-
-	uint8_t *buffer = malloc(cf_size);
-	fread(buffer, 1, cf_size, code_file);
-	fclose(code_file);
-
-
-	Reset8080(cpu);
-	LoadRomIntoMemory(cpu, "roms/invaders.h", 0x0000);
-	LoadRomIntoMemory(cpu, "roms/invaders.g", 0x0800);
-	LoadRomIntoMemory(cpu, "roms/invaders.f", 0x1000);
-	LoadRomIntoMemory(cpu, "roms/invaders.e", 0x1800);
-	
-	
-	int instruct_count = 0;
-
-	while (cpu->exit != true) {
-		//Disassemble8080Op(buffer, cpu->pc);
-		Emulate8080Op(cpu);
-		LogOutput(cpu, "logs/log.txt", &instruct_count);
-	}
-
-	return 0;
-}
-#endif 

@@ -56,9 +56,13 @@ void Reset8080(State8080 *state);
 
 void Emulate8080Op(State8080 *state);
 
+void cpu_req_interrupt(State8080 *state, uint8_t opcode);
+
 uint16_t get_reg_pair(State8080 *state, REGISTERS reg1, REGISTERS reg2);
 
 int Disassemble8080Op(unsigned char *codebuffer, int pc);
+
+bool LoadRomIntoMemory(State8080 *state, const char *filename, uint16_t offset);
 
 void UnimplimentedInstruction(State8080 *state);
 
