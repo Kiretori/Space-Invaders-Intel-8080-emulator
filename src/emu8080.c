@@ -23,7 +23,74 @@ const int opcode_cycles[NUM_OPCODES] = {
     5, 10, 10, 4, 11, 11, 7, 11, 5, 5, 10, 4, 11, 17, 7, 11
 };
 
+int opcode_size[NUM_OPCODES];
+
+static void _init_opcode_size(void) {
+    /* Since the majority of opcodes are only 1 byte, default initialize
+     * all to size 1. Unfortunately pure C has no sexy way to default initialize
+     * to any value other than 0 that I'm aware of hence the for loop.
+     */
+    for (int i = 0; i < NUM_OPCODES; i++) {
+        opcode_size[i] = 1;
+    }
+
+    opcode_size[0x06] = 2;		// MVI B 
+    opcode_size[0x0e] = 2;		// MVI C
+    opcode_size[0x16] = 2;		// MVI D
+    opcode_size[0x1e] = 2;		// MVI E
+    opcode_size[0x26] = 2;		// MVI H
+    opcode_size[0x2e] = 2;		// MVI L
+    opcode_size[0x36] = 2;		// MVI M
+    opcode_size[0x3e] = 2;		// MVI A
+    opcode_size[0xc6] = 2;		// ADI
+    opcode_size[0xce] = 2;		// ACI
+    opcode_size[0xd3] = 2;		// OUT
+    opcode_size[0xd6] = 2;		// SUI
+    opcode_size[0xdb] = 2;		// IN
+    opcode_size[0xde] = 2;		// SBI
+    opcode_size[0xe6] = 2;		// ANI
+    opcode_size[0xee] = 2;		// XRI
+    opcode_size[0xf6] = 2;		// ORI
+    opcode_size[0xfe] = 2;  	// CPI
+
+    opcode_size[0x01] = 3;		// LXI B
+    opcode_size[0x11] = 3;		// LXI D
+    opcode_size[0x21] = 3;		// LXI H
+    opcode_size[0x22] = 3;		// SHLD
+    opcode_size[0x2a] = 3;		// LHLD
+    opcode_size[0x31] = 3;		// LXI SP
+    opcode_size[0x32] = 3;		// STA
+    opcode_size[0x3a] = 3;		// LDA
+    opcode_size[0xc2] = 3;		// JNZ
+    opcode_size[0xc3] = 3;		// JMP
+    opcode_size[0xc4] = 3;		// CNZ
+    opcode_size[0xca] = 3;		// JZ
+    opcode_size[0xcc] = 3; 		// CZ
+    opcode_size[0xcd] = 3;		// CALL 
+    opcode_size[0xd2] = 3;		// JNC
+    opcode_size[0xd4] = 3;		// CNC
+    opcode_size[0xda] = 3;		// JC
+    opcode_size[0xdc] = 3;		// CC
+    opcode_size[0xe2] = 3;		// JPO
+    opcode_size[0xe4] = 3;		// CPO
+    opcode_size[0xea] = 3;		// JPE
+    opcode_size[0xec] = 3;		// CPE
+    opcode_size[0xf2] = 3; 		// JP
+    opcode_size[0xf4] = 3;		// CP
+    opcode_size[0xfa] = 3;		// JM
+    opcode_size[0xfc] = 3;		// CM
+}
+
+
+uint16_t get_reg_pair(State8080 *state, REGISTERS reg1, REGISTERS reg2) {
+	return (state->registers[reg1] << 8) | state->registers[reg2];
+}
+
+
 void Reset8080(State8080 *state) {
+
+	_init_opcode_size();
+
 	// Reseting the state of the CPU
 	state->pc = 0;
 	state->sp = 0;
@@ -66,18 +133,36 @@ void UnimplimentedInstruction(State8080 *state) {
 
 void Emulate8080Op(State8080 *state) {
 	
-	uint8_t *opcode = &state->memory[state->pc];
-	state->total_cycles += opcode_cycles[*opcode];
-	state->pc += 1;
+	uint8_t opcode;
 
-	switch(*opcode) {
+
+	uint8_t operands[MAX_OPERANDS] = {
+        state->memory[state->pc + 1],
+        state->memory[state->pc + 2]
+    };
+
+	if (state->interrupt >= 0 && state->int_enable) {
+        state->int_enable = 0;
+        opcode = state->interrupt;
+        state->interrupt = -1;
+
+    } else {
+        opcode = &state->memory[state->pc];
+
+        state->pc += opcode_size[opcode];
+    }
+	
+	state->total_cycles += opcode_cycles[opcode];
+	
+
+	switch(opcode) {
 		case 0x00:	NOP();	break;
-		case 0x01:	LXI_PAIR(state, B, opcode[1], opcode[2]); break;
+		case 0x01:	LXI_PAIR(state, B, operands[0], operands[1]); break;
 		case 0x02:	STAX(state, B); 	break;
 		case 0x03:	INX_PAIR(state, B);		break;
 		case 0x04: 	INR_R(state, B); 		break;
 		case 0x05:	DCR_R(state, B);		break;
-		case 0x06:  MVI_R(state, B, opcode[1]);	break;
+		case 0x06:  MVI_R(state, B, operands[0]);	break;
 		case 0x07:  RLC(state);			break;
 		case 0x08:  UnimplimentedInstruction(state); break;
 		case 0x09:	DAD_PAIR(state, B);		break;
@@ -85,54 +170,54 @@ void Emulate8080Op(State8080 *state) {
 		case 0x0B:	DCX_PAIR(state, B);	break;
 		case 0x0C:  INR_R(state, C); 	break;
 		case 0x0D:  DCR_R(state, C); 	break;
-		case 0x0E:  MVI_R(state, C, opcode[1]); break;
+		case 0x0E:  MVI_R(state, C, operands[0]); break;
 		case 0x0F: 	RRC(state);	break;
 		case 0x10:  UnimplimentedInstruction(state); break;
-		case 0x11:  LXI_PAIR(state, D, opcode[1], opcode[2]); break;
+		case 0x11:  LXI_PAIR(state, D, operands[0], operands[1]); break;
 		case 0x12:  STAX(state, D); 	break;
 		case 0x13: 	INX_PAIR(state, D); break;
 		case 0x14:  INR_R(state, D);	break;
 		case 0x15:  DCR_R(state, D); 	break;
-		case 0x16:  MVI_R(state, D, opcode[1]); break;
+		case 0x16:  MVI_R(state, D, operands[0]); break;
 		case 0x17:  RAL(state);			break;
 		case 0x18:  UnimplimentedInstruction(state); break;
 		case 0x19:  DAD_PAIR(state, D); 		break;
 		case 0x1a:  LDAX(state, D);		break;
 		case 0x1b:  DCX_PAIR(state, D); break;
 		case 0x1c:  INR_R(state, E);	break;
-		case 0x1e:	MVI_R(state, E, opcode[1]); break;
+		case 0x1e:	MVI_R(state, E, operands[0]); break;
 		case 0x1f:  RAR(state);			break;
 		case 0x20:  UnimplimentedInstruction(state); break;
-		case 0x21:  LXI_PAIR(state, H, opcode[1], opcode[2]); break;
-		case 0x22:  SHLD(state, opcode[1], opcode[2]);
+		case 0x21:  LXI_PAIR(state, H, operands[0], operands[1]); break;
+		case 0x22:  SHLD(state, operands[0], operands[1]);
 		case 0x23:  INX_PAIR(state, H);	break;
 		case 0x24:  INR_R(state, H);  	break;
 		case 0x25:  DCR_R(state, H); 	break;
-		case 0x26:  MVI_R(state, H, opcode[1]); break;
+		case 0x26:  MVI_R(state, H, operands[0]); break;
 		case 0x27:  DAA(state);			break;
 		case 0x28:  UnimplimentedInstruction(state); break;
 		case 0x29:  DAD_PAIR(state, H); 		break;
-		case 0x2a:  LHLD(state, opcode[1], opcode[2]); break;
+		case 0x2a:  LHLD(state, operands[0], operands[1]); break;
 		case 0x2b:  DCX_PAIR(state, H); break;
 		case 0x2c:  INR_R(state, L); 	break;
 		case 0x2d:  DCR_R(state, L); 	break;
-		case 0x2e:  MVI_R(state, L, opcode[1]); break;
+		case 0x2e:  MVI_R(state, L, operands[0]); break;
 		case 0x2f:  CMA(state);			break;
 		case 0x30:  UnimplimentedInstruction(state); break;
-		case 0x31:  LXI_SP(state, opcode[1], opcode[2]); break;
-		case 0x32:  STA(state, opcode[1], opcode[2]); break;
+		case 0x31:  LXI_SP(state, operands[0], operands[1]); break;
+		case 0x32:  STA(state, operands[0], operands[1]); break;
 		case 0x33:  INX_SP(state);		break;
 		case 0x34:  INR_M(state);		break;
 		case 0x35:  DCR_M(state);    	break;
-		case 0x36:  MVI_M(state, opcode[1]); break;
+		case 0x36:  MVI_M(state, operands[0]); break;
 		case 0x37:	STC(state);			break;
 		case 0x38:  UnimplimentedInstruction(state); break;
 		case 0x39:	DAD_SP(state); 		break;
-		case 0x3a:  LDA(state, opcode[1], opcode[2]); break;
+		case 0x3a:  LDA(state, operands[0], operands[1]); break;
 		case 0x3b:  DCX_SP(state);		break;
 		case 0x3c:  INR_R(state, A); 	break;
 		case 0x3d:  DCR_R(state, A);    break;
-		case 0x3e:  MVI_R(state, A, opcode[1]); break;
+		case 0x3e:  MVI_R(state, A, operands[0]); break;
 		case 0x3f:  CMC(state);			break;
 		case 0x40:  MOV_R_R(state, B, B); break;
 		case 0x41: 	MOV_R_R(state, B, C); break;
@@ -264,67 +349,67 @@ void Emulate8080Op(State8080 *state) {
 		case 0xbf:  CMP_R(state, A); 	break;
 		case 0xc0:  RNZ(state); 		break;
 		case 0xc1:	POP(state, B); 		break;
-		case 0xc2:  JNZ(state, opcode[1], opcode[2]); break;
-		case 0xc3:  JMP(state, opcode[1], opcode[2]); break;
-		case 0xc4:  CNZ(state, opcode[1], opcode[2]); break;
+		case 0xc2:  JNZ(state, operands[0], operands[1]); break;
+		case 0xc3:  JMP(state, operands[0], operands[1]); break;
+		case 0xc4:  CNZ(state, operands[0], operands[1]); break;
 		case 0xc5:  PUSH(state, B); 	break;
-		case 0xc6:  ADI(state, opcode[1]); break;
+		case 0xc6:  ADI(state, operands[0]); break;
 		case 0xc7:  RST_N(state, 0); 	break;
 		case 0xc8:  RZ(state); 			break;
 		case 0xc9:  RET(state); 		break;
-		case 0xca: 	JZ(state, opcode[1], opcode[2]); break;
+		case 0xca: 	JZ(state, operands[0], operands[1]); break;
 		case 0xcb:  UnimplimentedInstruction(state); break;
-		case 0xcc:	CZ(state, opcode[1], opcode[2]); break;
-		case 0xcd:	CALL(state, opcode[1], opcode[2]);  printf("RET Address: %04x", state->pc); break;
-		case 0xce:  ACI(state, opcode[1]); break;
+		case 0xcc:	CZ(state, operands[0], operands[1]); break;
+		case 0xcd:	CALL(state, operands[0], operands[1]);  printf("RET Address: %04x", state->pc); break;
+		case 0xce:  ACI(state, operands[0]); break;
 		case 0xcf:  RST_N(state, 1); 	break;
 		case 0xd0: 	RNC(state); 		break;
 		case 0xd1:	POP(state, D); 		break;
-		case 0xd2:	JNC(state, opcode[1], opcode[2]); break;
-		case 0xd3:	OUT(state, opcode[1]); break;
-		case 0xd4:	CNC(state, opcode[1], opcode[2]); break;
+		case 0xd2:	JNC(state, operands[0], operands[1]); break;
+		case 0xd3:	OUT(state, operands[0]); break;
+		case 0xd4:	CNC(state, operands[0], operands[1]); break;
 		case 0xd5:  PUSH(state, D); 	break;
-		case 0xd6:	SUI(state, opcode[1]); break;
+		case 0xd6:	SUI(state, operands[0]); break;
 		case 0xd7:	RST_N(state, 2); 	break;
 		case 0xd8:	RC(state); 			break;
 		case 0xd9:  UnimplimentedInstruction(state); break;
-		case 0xda:  JC(state, opcode[1], opcode[2]); break;
-		case 0xdb:  IN(state, opcode[1]); break;
-		case 0xdc:	CC(state, opcode[1], opcode[2]); break;
+		case 0xda:  JC(state, operands[0], operands[1]); break;
+		case 0xdb:  IN(state, operands[0]); break;
+		case 0xdc:	CC(state, operands[0], operands[1]); break;
 		case 0xdd:  UnimplimentedInstruction(state); break;
-		case 0xde:  SBI(state, opcode[1]); break;
+		case 0xde:  SBI(state, operands[0]); break;
 		case 0xdf:  RST_N(state, 3);	break;
 		case 0xe0:  RPO(state); 		break;
 		case 0xe1:  POP(state, H); 		break;
-		case 0xe2:  JPO(state, opcode[1], opcode[2]); break;
+		case 0xe2:  JPO(state, operands[0], operands[1]); break;
 		case 0xe3:  XTHL(state); 		break;
-		case 0xe4:	CPO(state, opcode[1], opcode[2]); break;
+		case 0xe4:	CPO(state, operands[0], operands[1]); break;
 		case 0xe5:  PUSH(state, H);		break;
-		case 0xe6:	ANI(state, opcode[1]); break;
+		case 0xe6:	ANI(state, operands[0]); break;
 		case 0xe7:  RST_N(state, 4); 	break;
 		case 0xe8:	RPE(state); 		break;
 		case 0xe9:	PCHL(state); 		break;
-		case 0xea:  JPE(state, opcode[1], opcode[2]); break;
+		case 0xea:  JPE(state, operands[0], operands[1]); break;
 		case 0xeb:  XCHG(state); 		break;
-		case 0xec:  CPE(state, opcode[1], opcode[2]); break;
+		case 0xec:  CPE(state, operands[0], operands[1]); break;
 		case 0xed:  UnimplimentedInstruction(state); break;
-		case 0xee:  XRI(state, opcode[1]); break;
+		case 0xee:  XRI(state, operands[0]); break;
 		case 0xef:  RST_N(state, 5); 	break;
 		case 0xf0:  RP(state); 			break;
 		case 0xf1:  POP_PSW(state);		break;
-		case 0xf2:  JP(state, opcode[1], opcode[2]); break;
+		case 0xf2:  JP(state, operands[0], operands[1]); break;
 		case 0xf3:	DI(state); 			break;
-		case 0xf4:  CP(state, opcode[1], opcode[2]); break;
+		case 0xf4:  CP(state, operands[0], operands[1]); break;
 		case 0xf5:  PUSH_PSW(state); 	break;
-		case 0xf6:  ORI(state, opcode[1]); break;
+		case 0xf6:  ORI(state, operands[0]); break;
 		case 0xf7:  RST_N(state, 6); 	break;
 		case 0xf8:	RM(state);			break;
 		case 0xf9:	SPHL(state);		break;
-		case 0xfa:	JM(state, opcode[1], opcode[2]); break;
+		case 0xfa:	JM(state, operands[0], operands[1]); break;
 		case 0xfb: 	EI(state); 			break;
-		case 0xfc: 	CM(state, opcode[1], opcode[2]); break;
+		case 0xfc: 	CM(state, operands[0], operands[1]); break;
 		case 0xfd:  UnimplimentedInstruction(state); break;
-		case 0xfe:  CPI(state, opcode[1]); break;
+		case 0xfe:  CPI(state, operands[0]); break;
 		case 0xff:  RST_N(state, 7); 	break;
 	}
 }

@@ -1,6 +1,8 @@
 # Ignore build directory
 /build
-
+/sounds
+/roms
+/test
 # Ignore helper scripts
 /helpers
 /logs

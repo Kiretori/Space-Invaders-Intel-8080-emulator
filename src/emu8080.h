@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define REG_NUMBER 7
+#define MAX_OPERANDS 2 
 #define MAX_MEM 0x10000
 #define NUM_IO 0xFF
 #define NUM_OPCODES 0x100
@@ -38,6 +39,7 @@ typedef struct State8080 {
 
 	unsigned long total_cycles;
 
+	int interrupt;
 } State8080;
 
 typedef enum REGISTERS {
@@ -53,6 +55,8 @@ typedef enum REGISTERS {
 void Reset8080(State8080 *state);
 
 void Emulate8080Op(State8080 *state);
+
+uint16_t get_reg_pair(State8080 *state, REGISTERS reg1, REGISTERS reg2);
 
 int Disassemble8080Op(unsigned char *codebuffer, int pc);
 
