@@ -38,5 +38,5 @@ Might make it a full 8080 emulator eventually (work in progress)
 
 ## References and Help
 [Emulator 101](http://www.emulator101.com/welcome.html)  
-[Computer Archaeology](https://www.computerarcheology.com/Arcade/SpaceInvaders/)
+[Computer Archaeology](https://www.computerarcheology.com/Arcade/SpaceInvaders/)  
 [Kurtjd's SDL Implementation](https://github.com/kurtjd/space-invaders-emulator)
