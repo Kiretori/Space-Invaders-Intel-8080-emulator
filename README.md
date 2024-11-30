@@ -18,11 +18,11 @@ Might make it a full 8080 emulator eventually (work in progress)
 
 ## How To Run
 ### Linux
-`cd build` 
+`cd build`   
 `./invaders`
 
 ### Windows
-`cd build` 
+`cd build`    
 `invaders.exe`
 
 
