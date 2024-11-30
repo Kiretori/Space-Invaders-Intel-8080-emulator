@@ -8,20 +8,21 @@ Might make it a full 8080 emulator eventually (work in progress)
 * SDL2 and SDL2_mixer
 * CMake (optional)
 * Space Invaders ROM files 
-* Space Invaders sound files
+* Space Invaders sound files (not included)
 
 
 ## How To Build
-`cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`  
-`cd build`  
-`./invaders`
+`cmake -S . -B build -DCMAKE_BUILD_TYPE=Release`
+`cmake --build build` 
 
 
 ## How To Run
 ### Linux
+`cd build` 
 `./invaders`
 
 ### Windows
+`cd build` 
 `invaders.exe`
 
 
